@@ -61,22 +61,28 @@ times = {"1s": 1,
          "1year": 365 * 24 * 3600
          }
 
+
+def get_spectrum_value(energy, time):
+    s = 0
+    for element in data:
+        coeff = coefficient(element, time)
+        s += coeff * distribution(element, energy)
+        for child in element['chain']:
+            coeff = coefficient(child, time, coeff)
+            try:
+                s += coeff * distribution(child, energy)
+            except ValueError:
+                print(child)
+    return s
+
+
 for tk in times.keys():
     time = times[tk]
     export_file = open(exportfilename.format(tk), "w")
     for p in range(points):
         energy = start_energy + h * p
-        sum = 0
-        for element in data:
-            coeff = coefficient(element, time)
-            sum += coeff * distribution(element, energy)
-            for child in element['chain']:
-                coeff = coefficient(child, time, coeff)
-                try:
-                    sum += coeff * distribution(child, energy)
-                except ValueError:
-                    print(child)
-        print("energy:{}, value:{}".format(energy, sum))
-        export_file.write("{} {}\n".format(energy, sum))
+        value = get_spectrum_value(energy, time)
+        print("energy:{}, value:{}".format(energy, value))
+        export_file.write("{} {}\n".format(energy, value))
 
     export_file.close()
