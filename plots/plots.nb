@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     38662,        851]
-NotebookOptionsPosition[     37865,        817]
-NotebookOutlinePosition[     38199,        832]
-CellTagsIndexPosition[     38156,        829]
+NotebookDataLength[     38738,        854]
+NotebookOptionsPosition[     37940,        820]
+NotebookOutlinePosition[     38275,        835]
+CellTagsIndexPosition[     38232,        832]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -63,7 +63,8 @@ Cell[BoxData[{
   3.694705878062924*^9}}],
 
 Cell[BoxData["5"], "Output",
- CellChangeTimes->{3.694705878674415*^9, 3.6947065989367456`*^9}]
+ CellChangeTimes->{3.694705878674415*^9, 3.6947065989367456`*^9, 
+  3.694761267303606*^9}]
 }, Open  ]]
 }, Open  ]],
 
@@ -423,7 +424,8 @@ vxyq31zQyXge3oh8+jxtPzoYz8MbcyvWnrjc387+BaxLsn8=
    3.69468138865026*^9}, {3.6946815258072443`*^9, 3.694681556378796*^9}, 
    3.694681605520018*^9, 3.694681691251482*^9, {3.6946817222166*^9, 
    3.694681724121915*^9}, 3.6946817769230003`*^9, 3.694705882606038*^9, {
-   3.6947064958824663`*^9, 3.6947065132346373`*^9}, 3.694706600799467*^9}]
+   3.6947064958824663`*^9, 3.6947065132346373`*^9}, 3.694706600799467*^9, 
+   3.6947612691499*^9}]
 }, Open  ]]
 }, Open  ]],
 
@@ -640,7 +642,7 @@ xyzvujDkYQX5ZzMO8gODyb/wJN9B
     NCache[GoldenRatio^(-1), 0.6180339887498948], Axes -> True, 
     AxesLabel -> {
       FormBox["\"E, MeV\"", TraditionalForm], None}, AxesOrigin -> {0, 0}, 
-    ImageSize -> {545., Automatic}, Method -> {}, 
+    ImageSize -> {674., Automatic}, Method -> {}, 
     PlotRange -> {{0, 11.879999999999999`}, {0, 1.}}, PlotRangeClipping -> 
     True, PlotRangePadding -> {{0.23759999999999998`, 0.23759999999999998`}, {
      0.02, 0.02}}],
@@ -811,11 +813,12 @@ xyzvujDkYQX5ZzMO8gODyb/wJN9B
        RowBox[{"Placed", "[", 
          RowBox[{#2, ",", "After"}], "]"}]}], "]"}]& )]], "Output",
  CellChangeTimes->{
-  3.694706718814643*^9, {3.694706760066259*^9, 3.694706761659289*^9}}]
+  3.694706718814643*^9, {3.694706760066259*^9, 3.694706761659289*^9}, 
+   3.694761274007202*^9}]
 }, Open  ]]
 }, Open  ]]
 },
-WindowSize->{679, 720},
+WindowSize->{1362, 720},
 WindowMargins->{{0, Automatic}, {0, Automatic}},
 FrontEndVersion->"9.0 for Linux x86 (64-bit) (February 7, 2013)",
 StyleDefinitions->"Default.nb"
@@ -834,23 +837,23 @@ Notebook[{
 Cell[CellGroupData[{
 Cell[579, 22, 107, 1, 51, "Subtitle"],
 Cell[CellGroupData[{
-Cell[711, 27, 1377, 35, 165, "Input"],
-Cell[2091, 64, 94, 1, 32, "Output"]
+Cell[711, 27, 1377, 35, 99, "Input"],
+Cell[2091, 64, 119, 2, 32, "Output"]
 }, Open  ]]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[2234, 71, 109, 1, 51, "Subtitle"],
+Cell[2259, 72, 109, 1, 51, "Subtitle"],
 Cell[CellGroupData[{
-Cell[2368, 76, 778, 15, 77, "Input"],
-Cell[3149, 93, 16553, 332, 217, "Output"]
+Cell[2393, 77, 778, 15, 32, "Input"],
+Cell[3174, 94, 16577, 333, 217, "Output"]
 }, Open  ]]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[19751, 431, 102, 1, 51, "Subtitle"],
-Cell[19856, 434, 1441, 36, 143, "Input"],
+Cell[19800, 433, 102, 1, 51, "Subtitle"],
+Cell[19905, 436, 1441, 36, 143, "Input"],
 Cell[CellGroupData[{
-Cell[21322, 474, 497, 11, 99, "Input"],
-Cell[21822, 487, 16015, 326, 334, "Output"]
+Cell[21371, 476, 497, 11, 32, "Input"],
+Cell[21871, 489, 16041, 327, 413, "Output"]
 }, Open  ]]
 }, Open  ]]
 }
