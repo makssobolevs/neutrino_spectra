@@ -1,12 +1,18 @@
 import json
-from parsing.symbols_qmax import get_data_by_element
 import os
+from parse.jendl_wesite_parser import get_data_by_element
+
+element_name = "pu239"
 
 dir = os.path.dirname(__file__)
-filename = os.path.join(dir, 'dumps', 'chains_mathematica.json')
-expfilename = os.path.join(dir, "dumps", "final_fission_data.json")
 
-data = open(filename, "r")
+load_filename = os.path.join(dir, 'dumps', 'result_{}.json')
+load_filename = str(load_filename).format(element_name)
+
+export_filename = os.path.join(dir, 'dumps', 'final_{}.json')
+export_filename = str(export_filename).format(element_name)
+
+data = open(load_filename, "r")
 
 elements = json.load(data)
 
@@ -21,6 +27,6 @@ for el in elements:
             print(child)
     i += 1
 
-with open(expfilename, "w") as file:
+with open(export_filename, "w") as file:
     json.dump(elements, file, ensure_ascii=False)
 

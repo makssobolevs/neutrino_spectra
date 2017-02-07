@@ -8,11 +8,16 @@ import lib.pyENDF6.ENDF6 as ENDF6
 import os
 import logging
 from parse.endf_utils import get_z_a
+from constants import Database
 
 
 def _read_file_lines(element, database):
     dir = os.path.dirname(__file__)
-    filename = os.path.join(dir, '..', 'resources', 'fission_yields', database, element + '.parse')
+    filename = os.path.join(dir, '..', 'resources', 'fission_yields')
+    if database == Database.JENDL:
+        filename = os.path.join(filename, 'jendl', element + '.endf')
+    elif database == Database.ENDF:
+        filename = os.path.join(filename, 'endf', element + '.endf')
     f = open(filename, "r")
     return f.readlines()
 
@@ -52,15 +57,15 @@ def get_fission_product(line):
     za = get_z_a(zafp)
     # Floating point number - state designator, 0.0 - ground state
     za['fps'] = line[1]
-    za['yi'] = line[2]
+    za['y'] = line[2]
     za['er'] = line[3]
     return za
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    result = get_base_yields('u235', 'jendl')
-    sorted_data = sorted(result, key=lambda k: k['yi'], reverse=True)
+    result = get_base_yields('u235', Database.ENDF)
+    sorted_data = sorted(result, key=lambda k: k['y'], reverse=True)
     for e in sorted_data:
         logging.debug(e)
 

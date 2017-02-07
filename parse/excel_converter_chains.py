@@ -1,14 +1,17 @@
 import json
 import xlsxwriter
 import os
-from main import data
+import utils.filters as filters
 
 dir = os.path.dirname(__file__)
-# filename = os.path.join(dir, 'dumps', 'final_fission_data.json')
+
+filename = os.path.join(dir, 'dumps', 'final_pu239.json')
+out_filename = os.path.join(dir, 'dumps', 'final_data_pu239.xlsx')
 #
-out_filename = os.path.join(dir, 'dumps', 'final_data.xlsx')
-#
-# elements = json.load(filename)
+with open(filename, 'r') as file:
+    elements = json.load(file)
+
+data = filters.filter_beta_decayable(elements)
 
 workbook = xlsxwriter.Workbook(out_filename)
 worksheet = workbook.add_worksheet()

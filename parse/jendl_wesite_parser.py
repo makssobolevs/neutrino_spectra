@@ -1,8 +1,6 @@
 import requests
 import json
-import time
 from lxml import etree
-from json_loader import yields_base as yields
 import logging
 import re
 
@@ -13,6 +11,7 @@ request_url = "http://wwwndc.jaea.go.jp/cgi-bin/cn2014.cgi"
 export_filename = "dumps/yields_symbols_qmax.json"
 
 session = requests.Session()
+
 
 def parse_qmax(root):
     tags = root.xpath("(//b | //pre)")

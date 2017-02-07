@@ -1,10 +1,12 @@
 import json
-import requests
 import logging
-from lxml import etree
-from init_elements import elements, Element
-from parsing.symbols_qmax import get_data_by_element
 import re
+
+import requests
+from lxml import etree
+
+from init_elements import elements, Element
+from parse.jendl_wesite_parser import get_data_by_element
 
 log_level = logging.INFO
 logging.basicConfig(level=log_level, format='%(asctime)s - %(levelname)s - %(message)s')
