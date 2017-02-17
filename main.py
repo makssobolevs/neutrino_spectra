@@ -50,28 +50,6 @@ def get_maximum(data, time):
     max = minimize(minimize_f, min_x0, method='nelder-mead')
     return max.x[0]
 
-# # start_time = math.log(1)
-# # middle_time = math.log(100)
-# # finish_time = math.log(times["1year"])
-# start_time = 1
-# middle_time = 100
-# finish_time = times["1year"]
-#
-# dt1 = (middle_time - start_time) / 200
-# dt2 = (finish_time - middle_time) / 200
-#
-# t1 = np.arange(start_time, middle_time, dt1)
-# t2 = np.arange(middle_time, finish_time, dt2)
-# t = np.concatenate((t1, t2))
-#
-# with open(export_max_moving, "w") as file:
-#     for ti in t:
-#         # time = math.exp(ti)
-#         time = ti
-#         max = get_maximum(data, time)
-#         file.write("{}  {}\n".format(max, time))
-#         print("Time:{}, max:{}".format(time, max))
-
 for tk in times.keys():
     time = times[tk]
     export_file = open(exportfilename.format(tk), "w")

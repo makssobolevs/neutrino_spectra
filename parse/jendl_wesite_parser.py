@@ -1,17 +1,28 @@
 import requests
-import json
 from lxml import etree
 import logging
 import re
+from bs4 import BeautifulSoup
+import os
 
-log_level = logging.INFO
-logging.basicConfig(level=log_level, format='%(asctime)s - %(levelname)s - %(message)s')
+dir = os.path.dirname(__file__)
+log_path = os.path.join(dir, 'logs', 'parsing.log')
+
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    filename=log_path,
+                    filemode='w'
+                    )
 
 request_url = "http://wwwndc.jaea.go.jp/cgi-bin/cn2014.cgi"
-export_filename = "dumps/yields_symbols_qmax.json"
 
 session = requests.Session()
 
+
+FLOAT_REGEXP = '(\d+(\.\d+)?)\s?'
 
 def parse_qmax(root):
     tags = root.xpath("(//b | //pre)")
@@ -28,7 +39,28 @@ def parse_symbol(root):
     h2 = root.xpath("string(//h2[1])").strip()
     return h2
 
-FLOAT_REGEXP = '(\d+(\.\d+)?)\s?'
+
+def parse_gamma(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    pres = soup.find_all('pre')
+    gamma_data = []
+    for pre in pres:
+        if 'γ-ray energy(keV)' in pre.text:
+            table = re.search('(-{20,}$\n)(?P<data>(.|\n)*)\s-{20,}', pre.text, re.MULTILINE)
+            if table:
+                table_data = table.group('data')
+                rows = table_data.splitlines()
+                for row in rows:
+                    if '---' in row:
+                        break
+                    data = row.split()
+                    if 'B-' in data:
+                        gamma_data.append({
+                            'qgamma': float(data[0]),
+                            'pgamma': float(data[1]) * 1E-2
+                        })
+
+    return gamma_data
 
 
 def parse_half_life(root):
@@ -65,40 +97,27 @@ def parse_half_life(root):
 
 
 def get_data_by_element(z, a):
+    data = {}
     payload = {'atomic': z, 'mass': a}
     result = session.post(request_url, data=payload)
     root = etree.HTML(result.text)
     logging.debug(result.text)
-    data = {}
     data['symbol'] = parse_symbol(root)
-    data['qmax'] = parse_qmax(root)
+    try:
+        data['qmax'] = parse_qmax(root)
+    except ValueError:
+        logging.warning("Qbeta parse error: z={}, a={}".format(z, a))
+        raise ImportError
     data['hl'] = parse_half_life(root)
+    try:
+        data['gamma'] = parse_gamma(result.text)
+    except ValueError:
+        logging.warning("Gamma parse error: z={}, a={}".format(z, a))
     data['z'] = z
     data['a'] = a
     return data
 
-# temp = get_data_by_element(26, 66)
-# logging.info(temp)
 
 if __name__ == "__main__":
-    i = 0
-    for el in yields:
-        try:
-            el_data = get_data_by_element(el['z'], el['a'])
-            el['symbol'] = el_data['symbol']
-            el['qmax'] = el_data['qmax']
-            el['hl'] = el_data['hl']
-        except IndexError:
-            logging.error('Index error')
-            break
-        except ValueError as e:
-            logging.error(e, exc_info=True)
-            logging.error('Value error: z:%d,a:%d', el['z'], el['a'])
-        except AttributeError as e:
-            logging.exception(e)
-
-        logging.info("success fetch (%d/%d): %s", i, len(yields), str(el))
-        i += 1
-    # time.sleep(0.5)
-    with open(export_filename, "w") as file:
-        json.dump(yields, file, ensure_ascii=False)
+    data = get_data_by_element(39, 96)
+    print(data)

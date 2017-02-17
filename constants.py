@@ -11,6 +11,8 @@ HBAR = 1
 
 class Database(Enum):
     JENDL = 1
+    NAME_JENDL = "JENDL"
     ENDF = 2
+    NAME_ENDF = "ENDF"
     ROSFOND = 3
     AME2012 = 4

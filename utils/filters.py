@@ -8,7 +8,8 @@ def filter_light_elements(elements, min_a):
 
 
 def filter_beta_decayable(data):
-    d = [e for e in data if e['qmax'] > 0 and ('%' not in str(e['hl']))]
+    d = [e for e in data if ('qmax' in e)
+         and (e['qmax'] > 0) and ('%' not in str(e['hl']))]
     for el in d:
         if 'chain' in el:
             childs = el['chain']
