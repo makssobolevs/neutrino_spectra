@@ -5,8 +5,7 @@ import scipy.special as special
 
 def lambda_var(z, electronEnergy):
     """Lambda convenient variable"""
-    return CONST.ALPHA * z * electronEnergy / math.sqrt(
-        math.pow(electronEnergy, 2) - math.pow(CONST.ELECTRON_MASS, 2))
+    return CONST.ALPHA * z * electronEnergy / math.sqrt(math.pow(electronEnergy, 2) - math.pow(CONST.ELECTRON_MASS, 2))
 
 
 def r_var(a):

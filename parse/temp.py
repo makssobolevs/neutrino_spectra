@@ -10,6 +10,7 @@ dump_filenames = {
     "final": "{}_{}_final.json"
 }
 
+
 def create_filepath(template, element_name, database_name):
     dir = os.path.dirname(__file__)
     fn = template.format(element_name, database_name)
@@ -23,8 +24,8 @@ def load_json(filename, element_name, database_name):
         data = json.loads(file.read().replace(".e-", "e-"))
     return data
 
-data = load_json(dump_filenames['final'], 'u235', constants.Database.NAME_JENDL.value)
 
+data = load_json(dump_filenames['final'], 'u235', constants.Database.NAME_JENDL.value)
 
 strange = []
 
@@ -39,7 +40,7 @@ for el in data:
             el1 = dict(el)
             del el1['chain']
             strange.append(el1)
-            x.add((el1['z'],el1['a']))
+            x.add((el1['z'], el1['a']))
 
     for child in el['chain']:
         if 'gamma' in child:
@@ -48,14 +49,9 @@ for el in data:
                 s += gel['pgamma']
             if s > 1:
                 strange.append(child)
-                x.add((child['z'],child['a']))
+                x.add((child['z'], child['a']))
 
 print(len(strange))
 
-
 with open("strange.txt", "w") as file:
     pprint.pprint(x, stream=file)
-
-
-
-

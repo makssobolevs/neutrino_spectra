@@ -3,25 +3,48 @@ import os
 import math
 from scipy.optimize import minimize
 import numpy as np
+from constants import Database
+from calculation.cumulative_yields import populate_cfy
 
 from utils.filters import filter_beta_decayable
-from calculation.summation import get_spectrum_value
+from calculation.summation import get_spectrum_value, get_spectrum_for_cfy, populate_lmdb, get_ibd_cross_section
 
 # element_name = 'pu239'
+
 element_name = 'u235'
+database_name = Database.NAME_JENDL.value
 
-dir = os.path.dirname(__file__)
-loadfilename = os.path.join(dir, "parse", "dumps", "final_{}.json".format(element_name))
-exportfilename = os.path.join(dir, "plots", element_name + "time{}.dat")
+current_dir = os.path.dirname(__file__)
 
-export_max_moving = os.path.join(dir, "plots", "maximum_time.dat")
+def load_independent_base_data():
+    filename = "{}_{}_final.json".format(element_name, database_name)
+    loadfilename = os.path.join(current_dir, "parse", "dumps", filename)
+    file = open(loadfilename, "r")
+    data = json.load(file)
+    file.close()
+    # print("Base elements number:{}".format(len(data)))
+    data = filter_beta_decayable(data)
+    populate_lmdb(data)
+    return data
 
-file = open(loadfilename, "r")
 
-data = json.load(file)
-file.close()
+def load_cfy_data():
+    filename = "{}_{}_cfy_final.json".format(element_name, database_name)
+    loadfilename = os.path.join(current_dir, "parse", "dumps", filename)
+    file = open(loadfilename, "r")
+    data = json.load(file)
+    file.close()
+    # print("Base elements number:{}".format(len(data)))
+    data = filter_beta_decayable(data)
 
-data = filter_beta_decayable(data)
+    populate_lmdb(data)
+    return data
+
+base_data = load_independent_base_data()
+cfy_data = load_cfy_data()
+
+exportfilename = os.path.join(current_dir, "plots", element_name + "time{}.dat")
+
 
 start_energy = 0.0  # MeV
 finish_energy = 12.0  # MeV
@@ -31,13 +54,14 @@ points = 500
 h = (finish_energy - start_energy) / points
 
 # time = 1  # Second
-times = {"1s": 1,
-         "1minute": 60,
-         "1hour": 3600,
-         "24hours": 24 * 3600,
-         "1week": 7 * 24 * 3600,
-         "1year": 365 * 24 * 3600
-         }
+times = {
+    "1s": 1,
+    "1minute": 60,
+    "1hour": 3600,
+    "24hours": 24 * 3600,
+    "1week": 7 * 24 * 3600,
+    "1year": 5 * 365 * 24 * 3600
+}
 
 min_x0 = 10  # MeV
 
@@ -50,12 +74,23 @@ def get_maximum(data, time):
     max = minimize(minimize_f, min_x0, method='nelder-mead')
     return max.x[0]
 
-for tk in times.keys():
-    time = times[tk]
-    export_file = open(exportfilename.format(tk), "w")
+if __name__ == "__main__":
+    for tk in times.keys():
+        print(tk)
+        time = times[tk]
+        export_file = open(exportfilename.format(tk), "w")
+        for p in range(points):
+            energy = start_energy + h * p
+            value = get_spectrum_value(base_data, energy, time)
+            print("energy:{}, value:{}".format(energy, value))
+            export_file.write("{} {}\n".format(energy, value))
+
+        export_file.close()
+
+    export_file = open(exportfilename.format('CFY'), "w")
     for p in range(points):
         energy = start_energy + h * p
-        value = get_spectrum_value(data, energy, time)
+        value = get_spectrum_for_cfy(cfy_data, energy)
         print("energy:{}, value:{}".format(energy, value))
         export_file.write("{} {}\n".format(energy, value))
 

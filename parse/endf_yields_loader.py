@@ -22,7 +22,37 @@ def _read_file_lines(element, database):
     return f.readlines()
 
 
-def get_base_yields(element, database):
+def get_cumulative_yields(element, database):
+
+    lines = _read_file_lines(element, database)
+    sec = ENDF6.find_section(lines, MF=8, MT=459)
+
+    line0 = ENDF6.read_line(sec[0])
+    line1 = ENDF6.read_line(sec[1])
+
+    nfp = int(line1[5])
+
+    logging.debug("Fission yields for: {}".format(get_z_a(line0[0])))
+    logging.debug("Energy: {} eV".format(line1[0]))
+    logging.debug("Number of fission products: {}".format(nfp))
+
+    all = []
+    for e in sec[2:]:
+        all += ENDF6.read_line(e)
+    all = all[: 4 * nfp]
+
+    result = []
+
+    i = 0
+    for x in range(nfp):
+        chunk = all[i:i + 4]
+        data = get_fission_product(chunk)
+        i += 4
+        result.append(data)
+    return result
+
+
+def get_independent_yields(element, database):
 
     lines = _read_file_lines(element, database)
     sec = ENDF6.find_section(lines, MF=8, MT=454)
@@ -64,8 +94,9 @@ def get_fission_product(line):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    result = get_base_yields('u235', Database.ENDF)
+    result = get_independent_yields('u235', Database.ENDF)
     sorted_data = sorted(result, key=lambda k: k['y'], reverse=True)
     for e in sorted_data:
-        logging.debug(e)
+        if e['z'] == 34 and e['a'] == 80:
+            logging.debug(e)
 

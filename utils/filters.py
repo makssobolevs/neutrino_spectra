@@ -1,3 +1,4 @@
+import math
 
 def filter_by_yields(elements, low_border):
     return [el for el in elements if el['y'] > low_border]
@@ -13,5 +14,8 @@ def filter_beta_decayable(data):
     for el in d:
         if 'chain' in el:
             childs = el['chain']
-            el['chain'] = [c for c in childs if (c['qmax'] > 0) and ('%' not in str(c['hl']))]
+            # el['chain'] = [c for c in childs if (c['qmax'] > 0) and ('%' not in str(c['hl']))]
+            for c in childs:
+                if '%' in str(c['hl']):
+                    c['hl'] = float("inf");
     return d

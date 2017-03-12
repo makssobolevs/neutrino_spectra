@@ -5,7 +5,7 @@ from enum import Enum
 # ELECTRON_MASS = const.physical_constants['electron mass energy equivalent in MeV'][0]
 # HBAR = const.hbar
 ALPHA = const.alpha
-ELECTRON_MASS = 1
+ELECTRON_MASS = 0.511
 HBAR = 1
 
 
