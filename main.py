@@ -4,17 +4,17 @@ import math
 from scipy.optimize import minimize
 import numpy as np
 from constants import Database
-from calculation.cumulative_yields import populate_cfy
 
 from utils.filters import filter_beta_decayable
 from calculation.summation import get_spectrum_value, get_spectrum_for_cfy, populate_lmdb, get_ibd_cross_section
 
-# element_name = 'pu239'
+element_name = 'pu239'
 
-element_name = 'u235'
+# element_name = 'u235'
 database_name = Database.NAME_JENDL.value
 
 current_dir = os.path.dirname(__file__)
+
 
 def load_independent_base_data():
     filename = "{}_{}_final.json".format(element_name, database_name)

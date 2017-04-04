@@ -31,14 +31,14 @@ lines = _read_file_lines(create_filename(38, 95, 'Sr'), 'jendl2015')
 
 content = ENDF6.list_content(lines)
 
-for c in content:
-    print(c)
 
 sec = ENDF6.find_section(lines, MF=8, MT=457)
 
+print("Length of file: {}".format(len(sec)))
+
 line = []
 
-for s in range(len(sec[:30])):
+for s in range(len(sec)):
     line.append(ENDF6.read_line(sec[s]))
 
 print(line[0])
@@ -64,9 +64,14 @@ print("RFS: {}".format(rfs))
 print("Q: {}".format(qmax))
 print("BR: {}".format(br))
 
-for l in line[1:30]:
+for l in line[0:50]:
     print(l)
 
+
+with open("endf.txt", mode="w") as file:
+    for s in line:
+        file.write(str(s))
+        file.write("\n")
 
 # for l in sec:
 #     try:

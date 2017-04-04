@@ -5,13 +5,17 @@ from phys_functions import fermi_function
 
 def distribution(element, energy):
     qbeta = element['qmax'] * 1E-3
+    return distribution_for_q(element, energy, qbeta)
+
+
+def distribution_for_q(element, energy, qbeta):
     m_e = 0.511
     if energy > qbeta:
         return 0
     elif qbeta - energy > m_e:
         mult1 = energy * energy * (qbeta - energy)
         mult2 = math.sqrt(math.pow(qbeta - energy, 2) - m_e * m_e)
-        return mult1 * mult2  # * fermi_function(element['z'], element['a'], energy)
+        return mult1 * mult2  # * fermi_function(element['z'], element['a'], qbeta - energy)
     else:
         return 0
 
@@ -85,7 +89,8 @@ def get_spectrum_value(data, energy, time):
 
         s1 = 0
         for i in range(0, len(chain) - 1):
-            coeff = distribution(chain[i], energy)
+            # coeff = distribution(chain[i], energy)
+            coeff = distribution_with_gamma(chain[i], energy)
             if 'ratio' in chain[i]:
                 coeff *= chain[i]['ratio']
 
@@ -98,10 +103,23 @@ def get_spectrum_value(data, energy, time):
 def get_spectrum_for_cfy(data, energy):
     s = 0
     for element in data:
-        coeff = distribution(element, energy)
+        # coeff = distribution(element, energy)
+        coeff = distribution_with_gamma(element, energy)
         if 'ratio' in element:
              coeff *= element['ratio']
         s += element['y'] * coeff
+    return s
+
+
+def distribution_with_gamma(element, energy):
+    s = 0
+    p = 0
+    if 'gamma' in element:
+        for g in element['gamma']:
+            pgamma = g['pgamma']
+            s += distribution_for_q(element, energy, (element['qmax'] - g['qgamma']) * 1E-3 ) * pgamma
+            p += pgamma
+    s += distribution_for_q(element, energy, element['qmax'] * 1E-3) * (1 - p)
     return s
 
 
