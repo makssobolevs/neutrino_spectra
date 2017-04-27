@@ -8,9 +8,10 @@ from constants import Database
 from utils.filters import filter_beta_decayable
 from calculation.summation import get_spectrum_value, get_spectrum_for_cfy, populate_lmdb, get_ibd_cross_section
 
-element_name = 'pu239'
+# element_name = 'u238'
+# element_name = 'pu239'
+element_name = 'u235'
 
-# element_name = 'u235'
 database_name = Database.NAME_JENDL.value
 
 current_dir = os.path.dirname(__file__)
@@ -60,7 +61,7 @@ times = {
     "1hour": 3600,
     "24hours": 24 * 3600,
     "1week": 7 * 24 * 3600,
-    "1year": 5 * 365 * 24 * 3600
+    "1year": 1 * 365 * 24 * 3600
 }
 
 min_x0 = 10  # MeV

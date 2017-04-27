@@ -3,6 +3,39 @@ import scipy.integrate as integrate
 from phys_functions import fermi_function
 
 
+def get_normalization_for_chain(element, spectrum_values):
+    if not element['chain']:
+        n = 1
+    else:
+        n = len(element['chain'])
+    integral_value = 0
+    dE = spectrum_values[1]['e'] - spectrum_values[0]['e']
+    for cell in spectrum_values:
+        integral_value += cell['s']
+    integral_value *= dE
+    if integral_value != 0:
+        return element['y'] * n / integral_value
+    else:
+        return 0
+
+cache = {}
+
+
+def get_normalization_for_distribution(element):
+    result = 0.0
+    key = str(element['a']) + str(element['z'])
+    if key in cache:
+        result = cache[key]
+    else:
+        def func(e):
+            return distribution(element, e)
+        integral_result = integrate.quad(func, 0, 12)
+        if integral_result[0] != 0:
+            result = 1 / integral_result[0]
+        cache.update({key: result})
+    return result
+
+
 def distribution(element, energy):
     qbeta = element['qmax'] * 1E-3
     return distribution_for_q(element, energy, qbeta)
@@ -11,13 +44,13 @@ def distribution(element, energy):
 def distribution_for_q(element, energy, qbeta):
     m_e = 0.511
     if energy > qbeta:
-        return 0
+        return 0.0
     elif qbeta - energy > m_e:
         mult1 = energy * energy * (qbeta - energy)
         mult2 = math.sqrt(math.pow(qbeta - energy, 2) - m_e * m_e)
         return mult1 * mult2  # * fermi_function(element['z'], element['a'], qbeta - energy)
     else:
-        return 0
+        return 0.0
 
 
 def lmbd(element):
@@ -69,42 +102,53 @@ def coefficient(element, time, parent_coeff=1, parent_lambda=1):
         raise e
 
 
+def get_spectrum_value_for_element(element, energy, time):
+    chain = [element]
+    chain += element['chain']
+    ii = 0
+    for el in chain:
+        ii += 1
+        if el['hl'] == float("inf"):
+            break
+    # TODO think about f_last
+    def f_last(t):
+            return bateman_solving(chain, ii - 1, t)
+    s1 = 0
+    for i in range(0, len(chain) - 1):
+        coeff = distribution(chain[i], energy)
+        k = get_normalization_for_distribution(chain[i])
+        coeff *= k
+        # coeff = distribution_with_gamma(chain[i], energy)
+        if 'ratio' in chain[i]:
+            coeff *= chain[i]['ratio']
+
+        s1 += (chain[0]['y'] - bateman_solving(chain, i, time)) * coeff
+    return s1
+
+
 def get_spectrum_value(data, energy, time):
     s = 0
     for element in data:
-        chain = [element]
-        chain += element['chain']
-
-        ii = 0
-        for el in chain:
-            ii += 1
-            if el['hl'] == float("inf"):
-                break
-
-        # if (ii +1) != len(chain):
-        #     print(chain)
-
-        def f_last(t):
-            return bateman_solving(chain, ii - 1, t)
-
-        s1 = 0
-        for i in range(0, len(chain) - 1):
-            # coeff = distribution(chain[i], energy)
-            coeff = distribution_with_gamma(chain[i], energy)
-            if 'ratio' in chain[i]:
-                coeff *= chain[i]['ratio']
-
-            s1 += (chain[0]['y'] - bateman_solving(chain, i, time)) * coeff
+        s1 = get_spectrum_value_for_element(element, energy, time)
         s += s1
 
     return s
 
 
+def get_spectrum_value_for_element_cfy(element, energy):
+    coeff = distribution(element, energy)
+    k = get_normalization_for_distribution(element)
+    coeff *= k
+    if 'ratio' in element:
+        coeff *= element['ratio']
+    return element['y'] * coeff
+
+
 def get_spectrum_for_cfy(data, energy):
     s = 0
     for element in data:
-        # coeff = distribution(element, energy)
-        coeff = distribution_with_gamma(element, energy)
+        coeff = distribution(element, energy)
+        # coeff = distribution_with_gamma(element, energy)
         if 'ratio' in element:
              coeff *= element['ratio']
         s += element['y'] * coeff

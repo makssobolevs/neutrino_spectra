@@ -1,0 +1,67 @@
+import main
+from constants import Database
+import os
+from calculation.summation import get_spectrum_value_for_element, get_spectrum_value_for_element_cfy
+
+element_name = 'u235'
+
+database_name = Database.NAME_JENDL.value
+
+current_dir = os.path.dirname(__file__)
+
+
+def init_energy_cells(points, start_energy, d_energy):
+    cells = []
+    for i in range(points):
+        energy = start_energy + d_energy * i
+        d = {"e": energy, "s": 0}
+        cells.append(d)
+    return cells
+
+
+def export_spectrum(spectrum, time_str):
+    export_file = open(main.exportfilename.format(time_str), "w")
+    for c in spectrum:
+        export_file.write("{} {}\n".format(c['e'], c['s']))
+    export_file.close()
+
+
+def add_element_spectrum_value(full_value, element_value):
+    for i in range(len(full_value)):
+        full_value[i]['s'] += element_value[i]['s']
+    return full_value
+
+
+def calculate_spectrum_for_time(time, time_str):
+    full_spectrum_values = init_energy_cells(main.points, main.start_energy, main.h)
+    for element in main.base_data:
+        element_spectrum_values = init_energy_cells(main.points, main.start_energy, main.h)
+        for cell in element_spectrum_values:
+            energy = cell['e']
+            cell['s'] = get_spectrum_value_for_element(element, energy, time)
+        full_spectrum_values = add_element_spectrum_value(full_spectrum_values, element_spectrum_values)
+    export_spectrum(full_spectrum_values, time_str)
+
+
+def calculate_spectrum_for_cfy():
+    full_spectrum_values = init_energy_cells(main.points, main.start_energy, main.h)
+    for element in main.cfy_data:
+        element_spectrum_values = init_energy_cells(main.points, main.start_energy, main.h)
+        for cell in element_spectrum_values:
+            energy = cell['e']
+            cell['s'] = get_spectrum_value_for_element_cfy(element, energy)
+        full_spectrum_values = add_element_spectrum_value(full_spectrum_values, element_spectrum_values)
+    export_spectrum(full_spectrum_values, "CFY")
+
+
+if __name__ == "__main__":
+    for tk in main.times.keys():
+        time = main.times[tk]
+        print("Calculating {} for time {}".format(element_name, tk))
+        calculate_spectrum_for_time(time, tk)
+    print("Calculation fo CFY")
+    calculate_spectrum_for_cfy()
+
+
+
+
