@@ -14,7 +14,7 @@ def _read_file_lines(element, database="jendl2015"):
     return f.readlines()
 
 
-def create_filename(z, a, s):
+def create_filename(z, a, s, metaStable=False):
     name = ''
     if z < 100:
         name += '0'
@@ -23,11 +23,12 @@ def create_filename(z, a, s):
     if a < 100:
         name += '0'
     name += str(a)
+    if metaStable:
+        name += 'm'
     return name
 
 
-# 38-Sr-95
-lines = _read_file_lines(create_filename(38, 95, 'Sr'), 'jendl2015')
+lines = _read_file_lines(create_filename(52, 133, 'Te', metaStable=True), 'jendl2015')
 
 content = ENDF6.list_content(lines)
 

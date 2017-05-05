@@ -2,8 +2,9 @@ import main
 from constants import Database
 import os
 from calculation.summation import get_spectrum_value_for_element, get_spectrum_value_for_element_cfy
+import calculation.settings as settings
 
-element_name = 'u235'
+element_name = main.element_name
 
 database_name = Database.NAME_JENDL.value
 
@@ -51,7 +52,10 @@ def calculate_spectrum_for_cfy():
             energy = cell['e']
             cell['s'] = get_spectrum_value_for_element_cfy(element, energy)
         full_spectrum_values = add_element_spectrum_value(full_spectrum_values, element_spectrum_values)
-    export_spectrum(full_spectrum_values, "CFY")
+    postfix = "CFY"
+    if settings.WITH_GAMMA:
+        postfix += "_gamma"
+    export_spectrum(full_spectrum_values, postfix)
 
 
 if __name__ == "__main__":
@@ -61,7 +65,5 @@ if __name__ == "__main__":
         calculate_spectrum_for_time(time, tk)
     print("Calculation fo CFY")
     calculate_spectrum_for_cfy()
-
-
 
 

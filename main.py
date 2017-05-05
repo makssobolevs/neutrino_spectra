@@ -4,13 +4,14 @@ import math
 from scipy.optimize import minimize
 import numpy as np
 from constants import Database
+import calculation.settings as settings
 
 from utils.filters import filter_beta_decayable
 from calculation.summation import get_spectrum_value, get_spectrum_for_cfy, populate_lmdb, get_ibd_cross_section
 
-# element_name = 'u238'
+element_name = 'u238'
 # element_name = 'pu239'
-element_name = 'u235'
+# element_name = 'u235'
 
 database_name = Database.NAME_JENDL.value
 
@@ -54,7 +55,6 @@ points = 500
 
 h = (finish_energy - start_energy) / points
 
-# time = 1  # Second
 times = {
     "1s": 1,
     "1minute": 60,
@@ -63,17 +63,10 @@ times = {
     "1week": 7 * 24 * 3600,
     "1year": 1 * 365 * 24 * 3600
 }
+if settings.WITH_GAMMA:
+    for key in times.keys():
+        times[key + '_gamma'] = times.pop(key)
 
-min_x0 = 10  # MeV
-
-
-def get_maximum(data, time):
-
-    def minimize_f(x):
-        return -get_spectrum_value(data, x[0], time)
-
-    max = minimize(minimize_f, min_x0, method='nelder-mead')
-    return max.x[0]
 
 if __name__ == "__main__":
     for tk in times.keys():
