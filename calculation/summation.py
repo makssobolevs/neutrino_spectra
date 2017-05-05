@@ -3,7 +3,6 @@ import scipy.integrate as integrate
 from phys_functions import fermi_function
 import calculation.settings as settings
 
-
 def get_normalization_for_chain(element, spectrum_values):
     if not element['chain']:
         n = 1
@@ -33,8 +32,10 @@ def get_normalization_for_distribution(element):
                 return distribution_with_gamma(element, e)
             else:
                 return distribution(element, e)
-        # integral_result = integrate.quad(func, 0, 15)
-        integral_result = custom_integrate(func, 0, 15)
+        if settings.WITH_GAMMA:
+            integral_result = custom_integrate(func, 0, 15)
+        else:
+            integral_result = integrate.quad(func, 0, 15)
         if integral_result[0] != 0:
             result = 1 / integral_result[0]
         cache.update({key: result})
@@ -148,7 +149,7 @@ def get_spectrum_for_cfy(data, energy):
         else:
             coeff = distribution(element, energy)
         if 'ratio' in element:
-             coeff *= element['ratio']
+            coeff *= element['ratio']
         s += element['y'] * coeff
     return s
 

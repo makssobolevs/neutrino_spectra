@@ -63,9 +63,6 @@ times = {
     "1week": 7 * 24 * 3600,
     "1year": 1 * 365 * 24 * 3600
 }
-if settings.WITH_GAMMA:
-    for key in times.keys():
-        times[key + '_gamma'] = times.pop(key)
 
 
 if __name__ == "__main__":
