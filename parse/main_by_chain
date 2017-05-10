@@ -1,18 +1,15 @@
-import main
+import main as setup
 from constants import Database
-from calculation.summation import get_spectrum_value_for_element, get_spectrum_value_for_element_cfy
+from calculation.summation import get_spectrum_value_for_branch, get_spectrum_value_for_element_cfy
 import calculation.settings as settings
 
 import os
 from functools import reduce
 from multiprocessing import Pool, cpu_count
 
-element_name = main.element_name
-
+element_name = setup.element_name
 database_name = Database.NAME_JENDL.value
-
 current_dir = os.path.dirname(__file__)
-
 threads = cpu_count()
 
 
@@ -29,7 +26,7 @@ def export_spectrum(spectrum, time_str):
     postfix = time_str
     if settings.WITH_GAMMA:
         postfix += "_gamma"
-    export_file = open(main.exportfilename.format(time_str), "w")
+    export_file = open(setup.exportfilename.format(time_str), "w")
     for c in spectrum:
         export_file.write("{} {}\n".format(c['e'], c['s']))
     export_file.close()
@@ -42,15 +39,15 @@ def add_element_spectrum_value(full_value, element_value):
 
 
 def calculate_individual_spectrum(element):
-    element_spectrum_values = init_energy_cells(main.points, main.start_energy, main.h)
+    element_spectrum_values = init_energy_cells(setup.points, setup.start_energy, setup.h)
     for cell in element_spectrum_values:
         energy = cell['e']
-        cell['s'] = get_spectrum_value_for_element(element, energy, time)
+        cell['s'] = get_spectrum_value_for_branch(element, energy, time)
     return element_spectrum_values
 
 
 def calculate_individual_spectrum_cfy(element):
-    element_spectrum_values = init_energy_cells(main.points, main.start_energy, main.h)
+    element_spectrum_values = init_energy_cells(setup.points, setup.start_energy, setup.h)
     for cell in element_spectrum_values:
         energy = cell['e']
         cell['s'] = get_spectrum_value_for_element_cfy(element, energy)
@@ -60,9 +57,9 @@ import time as tt
 
 
 def calculate_spectrum_for_time(time, time_str):
-    full_spectrum_values = init_energy_cells(main.points, main.start_energy, main.h)
+    full_spectrum_values = init_energy_cells(setup.points, setup.start_energy, setup.h)
     start = tt.time()
-    spectra_list = Pool(threads).imap_unordered(calculate_individual_spectrum, main.base_data)
+    spectra_list = Pool(threads).imap_unordered(calculate_individual_spectrum, setup.base_data)
     # spectra_list = list(map(calculate_individual_spectrum, main.base_data))
     result = reduce(add_element_spectrum_value, spectra_list, full_spectrum_values)
     end = tt.time()
@@ -71,15 +68,15 @@ def calculate_spectrum_for_time(time, time_str):
 
 
 def calculate_spectrum_for_cfy():
-    full_spectrum_values = init_energy_cells(main.points, main.start_energy, main.h)
-    spectra_list = Pool(threads).imap_unordered(calculate_individual_spectrum_cfy, main.cfy_data)
+    full_spectrum_values = init_energy_cells(setup.points, setup.start_energy, setup.h)
+    spectra_list = Pool(threads).imap_unordered(calculate_individual_spectrum_cfy, setup.cfy_data)
     result = reduce(add_element_spectrum_value, spectra_list, full_spectrum_values)
     export_spectrum(result, "CFY")
 
 
 if __name__ == "__main__":
-    for tk in main.times.keys():
-        time = main.times[tk]
+    for tk in setup.times.keys():
+        time = setup.times[tk]
         print("Calculating {} for time {}".format(element_name, tk))
         calculate_spectrum_for_time(time, tk)
     print("Calculation fo CFY")

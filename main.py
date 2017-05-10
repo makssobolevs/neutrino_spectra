@@ -1,17 +1,13 @@
 import json
 import os
-import math
-from scipy.optimize import minimize
-import numpy as np
 from constants import Database
-import calculation.settings as settings
 
 from utils.filters import filter_beta_decayable
-from calculation.summation import get_spectrum_value, get_spectrum_for_cfy, populate_lmdb, get_ibd_cross_section
+from calculation.summation import populate_lmdb
 
-element_name = 'u238'
+# element_name = 'u238'
 # element_name = 'pu239'
-# element_name = 'u235'
+element_name = 'u235'
 
 database_name = Database.NAME_JENDL.value
 
@@ -19,27 +15,27 @@ current_dir = os.path.dirname(__file__)
 
 
 def load_independent_base_data():
-    filename = "{}_{}_final.json".format(element_name, database_name)
+    filename = "{}_{}_ensdf.json".format(element_name, database_name)
     loadfilename = os.path.join(current_dir, "parse", "dumps", filename)
     file = open(loadfilename, "r")
     data = json.load(file)
     file.close()
-    # print("Base elements number:{}".format(len(data)))
+    print("Base fission elements number:{}".format(len(data)))
     data = filter_beta_decayable(data)
+    print("Beta decayable branches number:{}".format(len(data)))
     populate_lmdb(data)
     return data
 
 
 def load_cfy_data():
-    filename = "{}_{}_cfy_final.json".format(element_name, database_name)
+    filename = "{}_{}_ensdf_cfy.json".format(element_name, database_name)
     loadfilename = os.path.join(current_dir, "parse", "dumps", filename)
     file = open(loadfilename, "r")
     data = json.load(file)
     file.close()
     # print("Base elements number:{}".format(len(data)))
-    data = filter_beta_decayable(data)
 
-    populate_lmdb(data)
+    # populate_lmdb(data)
     return data
 
 base_data = load_independent_base_data()
@@ -65,25 +61,5 @@ times = {
 }
 
 
-if __name__ == "__main__":
-    for tk in times.keys():
-        print(tk)
-        time = times[tk]
-        export_file = open(exportfilename.format(tk), "w")
-        for p in range(points):
-            energy = start_energy + h * p
-            value = get_spectrum_value(base_data, energy, time)
-            print("energy:{}, value:{}".format(energy, value))
-            export_file.write("{} {}\n".format(energy, value))
-
-        export_file.close()
-
-    export_file = open(exportfilename.format('CFY'), "w")
-    for p in range(points):
-        energy = start_energy + h * p
-        value = get_spectrum_for_cfy(cfy_data, energy)
-        print("energy:{}, value:{}".format(energy, value))
-        export_file.write("{} {}\n".format(energy, value))
-
-    export_file.close()
-
+if __name__ == '__main__':
+    print(len(cfy_data))

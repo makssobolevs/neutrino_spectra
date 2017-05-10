@@ -23,7 +23,7 @@ cache = {}
 
 def get_normalization_for_distribution(element):
     result = 0.0
-    key = str(element['a']) + str(element['z'])
+    key = str(element['a']) + str(element['s'])
     if key in cache:
         result = cache[key]
     else:
@@ -54,7 +54,7 @@ def custom_integrate(f, x0, x1):
 
 
 def distribution(element, energy):
-    qbeta = element['qmax'] * 1E-3
+    qbeta = element['q'] * 1E-3
     return distribution_for_q(element, energy, qbeta)
 
 
@@ -77,68 +77,70 @@ def lmbd(element):
 
 
 def populate_lmdb(data):
-    for el in data:
-        el['l'] = lmbd(el)
-        if 'chain' in el:
-            for child in el['chain']:
-                child['l'] = lmbd(child)
+    for branch in data:
+        for el in branch['branch']:
+            el['l'] = lmbd(el)
 
 
 def bateman_solving(elements, n, t):
     mult1 = 1
-    mult1 *= elements[0]['y']
+    branch = elements['branch']
+    mult1 *= elements['y']
     for j in range(0, n):
-        mult1 *= lmbd(elements[j])
+        mult1 *= lmbd(branch[j])
     sum1 = 0
     for j in range(0, n + 1):
         mult2 = 1
         for p in range(n + 1):
             if p != j:
-                mult2 *= elements[p]['l'] - elements[j]['l']
+                mult2 *= branch[p]['l'] - branch[j]['l']
         if mult2 != 0.0:
-            sum1 += math.exp(- elements[j]['l'] * t) / mult2
+            sum1 += math.exp(- branch[j]['l'] * t) / mult2
     mult1 *= sum1
     return mult1
 
 
-def get_spectrum_value_for_element(element, energy, time):
-    chain = [element]
-    chain += element['chain']
+def get_spectrum_value_for_branch(element, energy, time):
+    branch = element['branch']
 
     s1 = 0
-    for i in range(0, len(chain) - 1):
+    for i in range(0, len(branch) - 1):
         if settings.WITH_GAMMA:
-            coef = distribution_with_gamma(chain[i], energy)
+            coef = distribution_with_gamma(branch[i], energy)
         else:
-            coef = distribution(chain[i], energy)
-        k = get_normalization_for_distribution(chain[i])
+            coef = distribution(branch[i], energy)
+        k = get_normalization_for_distribution(branch[i])
         coef *= k
-        if 'ratio' in chain[i]:
-            coef *= chain[i]['ratio']
+        if 'ratio' in branch[i]:
+            coef *= branch[i]['ratio']
 
-        s1 += (chain[0]['y'] - bateman_solving(chain, i, time)) * coef
+        s1 += (element['y'] - bateman_solving(element, i, time)) * coef
     return s1
 
 
 def get_spectrum_value(data, energy, time):
     s = 0
     for element in data:
-        s1 = get_spectrum_value_for_element(element, energy, time)
+        s1 = get_spectrum_value_for_branch(element, energy, time)
         s += s1
 
     return s
 
 
 def get_spectrum_value_for_element_cfy(element, energy):
-    if settings.WITH_GAMMA:
-        coeff = distribution_with_gamma(element, energy)
-    else:
-        coeff = distribution(element, energy)
-    k = get_normalization_for_distribution(element)
-    coeff *= k
-    if 'ratio' in element:
-        coeff *= element['ratio']
-    return element['y'] * coeff
+    s = 0
+    for branch in element['branches']:
+        for nuclide in branch['branch']:
+            if settings.WITH_GAMMA:
+                coeff = distribution_with_gamma(nuclide, energy)
+            else:
+                coeff = distribution(nuclide, energy)
+            k = get_normalization_for_distribution(nuclide)
+            coeff *= k
+            if 'ratio' in element:
+                coeff *= element['ratio']
+            s += coeff
+    return element['y'] * s  # multiply cumulative yield
 
 
 def get_spectrum_for_cfy(data, energy):
