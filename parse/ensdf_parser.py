@@ -189,11 +189,12 @@ def get_beta_decay_branches(card):
             level_energy = 0.0
 
         return {
-            'e': level_energy,
+            'e': level_energy * 1E-3,
             'ib': ib
         }
 
-    return list(map(beta_decay_data, beta_decays))
+    beta_decays = list(map(beta_decay_data, beta_decays))
+    return list(filter(lambda b: '?' not in str(b['ib']), beta_decays))
 
 
 def check_ib(element):
@@ -226,7 +227,7 @@ def get_data_for_nucid(nucid, fps):
         raise ImportError('No beta decay card')
 
     actual_card = actual_cards[0]
-    q = get_q_value(actual_card, nucid)
+    q = get_q_value(actual_card, nucid) * 1E-3  # Mev
     hl = get_half_life(actual_card, nucid)
     br = get_branching(actual_card)
     child = get_child(actual_card[0])

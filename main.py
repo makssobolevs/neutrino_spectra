@@ -2,7 +2,7 @@ import json
 import os
 from constants import Database
 
-from utils.filters import filter_beta_decayable
+from utils.filters import filter_beta_decayable, filter_beta_decayable_cfy
 from calculation.summation import populate_lmdb
 
 # element_name = 'u238'
@@ -20,9 +20,9 @@ def load_independent_base_data():
     file = open(loadfilename, "r")
     data = json.load(file)
     file.close()
-    print("Base fission elements number:{}".format(len(data)))
+    # print("Base fission elements number:{}".format(len(data)))
     data = filter_beta_decayable(data)
-    print("Beta decayable branches number:{}".format(len(data)))
+    # print("Beta decayable branches number:{}".format(len(data)))
     populate_lmdb(data)
     return data
 
@@ -33,8 +33,9 @@ def load_cfy_data():
     file = open(loadfilename, "r")
     data = json.load(file)
     file.close()
-    # print("Base elements number:{}".format(len(data)))
-
+    # print("Base cfy:{}".format(len(data)))
+    data = filter_beta_decayable_cfy(data)
+    # print("Filter cfy:{}".format(len(data)))
     # populate_lmdb(data)
     return data
 
@@ -61,5 +62,3 @@ times = {
 }
 
 
-if __name__ == '__main__':
-    print(len(cfy_data))

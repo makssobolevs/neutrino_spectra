@@ -1,7 +1,6 @@
 import math
-import scipy.integrate as integrate
-from phys_functions import fermi_function
 import calculation.settings as settings
+
 
 def get_normalization_for_chain(element, spectrum_values):
     if not element['chain']:
@@ -21,21 +20,17 @@ def get_normalization_for_chain(element, spectrum_values):
 cache = {}
 
 
-def get_normalization_for_distribution(element):
+def get_normalization_for_distribution(element, qmax):
+    from scipy.integrate import quad
+
     result = 0.0
-    key = str(element['a']) + str(element['s'])
+    key = str(element['a']) + str(element['s']) + str(qmax)
     if key in cache:
         result = cache[key]
     else:
         def func(e):
-            if settings.WITH_GAMMA:
-                return distribution_with_gamma(element, e)
-            else:
-                return distribution(element, e)
-        if settings.WITH_GAMMA:
-            integral_result = custom_integrate(func, 0, 15)
-        else:
-            integral_result = integrate.quad(func, 0, 15)
+            return distribution_for_q(element, e, qmax)
+        integral_result = quad(func, 0, 15)
         if integral_result[0] != 0:
             result = 1 / integral_result[0]
         cache.update({key: result})
@@ -54,11 +49,16 @@ def custom_integrate(f, x0, x1):
 
 
 def distribution(element, energy):
-    qbeta = element['q'] * 1E-3
+    try:
+        qbeta = element['q']
+    except TypeError:
+        qbeta = 1
     return distribution_for_q(element, energy, qbeta)
 
 
 def distribution_for_q(element, energy, qbeta):
+    from phys_functions import fermi_function
+
     m_e = 0.511
     if energy > qbeta:
         return 0.0
@@ -104,12 +104,12 @@ def get_spectrum_value_for_branch(element, energy, time):
     branch = element['branch']
 
     s1 = 0
-    for i in range(0, len(branch) - 1):
+    for i in range(0, len(branch)):
         if settings.WITH_GAMMA:
             coef = distribution_with_gamma(branch[i], energy)
         else:
             coef = distribution(branch[i], energy)
-        k = get_normalization_for_distribution(branch[i])
+        k = get_normalization_for_distribution(branch[i], branch[i]['q'])
         coef *= k
         if 'ratio' in branch[i]:
             coef *= branch[i]['ratio']
@@ -128,19 +128,41 @@ def get_spectrum_value(data, energy, time):
 
 
 def get_spectrum_value_for_element_cfy(element, energy):
-    s = 0
-    for branch in element['branches']:
-        for nuclide in branch['branch']:
-            if settings.WITH_GAMMA:
-                coeff = distribution_with_gamma(nuclide, energy)
-            else:
-                coeff = distribution(nuclide, energy)
-            k = get_normalization_for_distribution(nuclide)
-            coeff *= k
-            if 'ratio' in element:
-                coeff *= element['ratio']
+    """
+    Cumulative fission yield can be as for radioactive and stable
+    nuclide and has yield by all decay branches and direct product.
+    There is no need to know full decay branch.    
+    :param element: 
+    :param energy: 
+    :return: spectrum value
+    """
+    nuclide = element['nuclide']
+    if not settings.WITH_GAMMA:
+        qmax = nuclide['q']
+        s = 0
+        p = 0
+        for b in nuclide['branches']:
+            e = b['e']
+            ib = b['ib']
+            coeff = distribution_for_q(nuclide, energy, qmax - e)
+            k = get_normalization_for_distribution(nuclide, qmax - e)
+            coeff = coeff * k * ib
             s += coeff
-    return element['y'] * s  # multiply cumulative yield
+            p += ib
+        if p < nuclide['ratio']:
+            ib = nuclide['ratio'] - p
+            coeff = distribution_for_q(nuclide, energy, qmax)
+            k = get_normalization_for_distribution(nuclide, qmax)
+            coeff = coeff * k * ib
+            s += coeff
+        return element['y'] * s
+    else:
+        coeff = distribution(nuclide, energy)
+        k = get_normalization_for_distribution(nuclide, nuclide['q'])
+        coeff *= k
+        if 'ratio' in nuclide:
+            coeff *= nuclide['ratio']
+            return element['y'] * coeff
 
 
 def get_spectrum_for_cfy(data, energy):

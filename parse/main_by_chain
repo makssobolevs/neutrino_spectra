@@ -79,7 +79,7 @@ if __name__ == "__main__":
         time = setup.times[tk]
         print("Calculating {} for time {}".format(element_name, tk))
         calculate_spectrum_for_time(time, tk)
-    print("Calculation fo CFY")
+    print("Calculation for CFY")
     calculate_spectrum_for_cfy()
 
 
