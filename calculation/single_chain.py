@@ -1,5 +1,5 @@
 import calculation.summation as summ
-import main
+import setup
 import scipy.integrate as integrate
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,7 +9,7 @@ from calculation.cumulative_yields import get_cfy_for_z_a
 from parse.endf_yields_loader import get_independent_yields
 
 
-element = main.data[0]
+element = setup.data[0]
 
 print(element)
 

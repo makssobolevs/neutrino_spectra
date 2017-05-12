@@ -6,13 +6,8 @@ import json
 import os
 
 scriptdir = os.path.dirname(__file__)
-
-element = "u235"
-database = Database.JENDL
-database_name = Database.NAME_JENDL.value
-
-exportfilename = os.path.join(scriptdir, "dumps",  "{}_{}_ensdf.json".format(element, database_name))
-exportcfyfilename = os.path.join(scriptdir, "dumps",  "{}_{}_ensdf_cfy.json".format(element, database_name))
+export_filename_template = "{}_{}_ensdf.json"
+export_cfy_filename_template = "{}_{}_ensdf_cfy.json"
 
 
 def map_yield_data(y):
@@ -23,9 +18,9 @@ def map_yield_data(y):
     return y
 
 
-def main_cumulative():
-    cfy_yields = yields.get_cumulative_yields(element, Database.JENDL)
-    cfy_yields = filters.filter_light_elements(cfy_yields, 15)
+def main_cumulative(element, database, export_filename):
+    cfy_yields = yields.get_cumulative_yields(element, database)
+    cfy_yields = filters.filter_light_nuclides(cfy_yields, 15)
     cfy_yields = filters.filter_by_yields(cfy_yields, 1E-10)
 
     for cfy in cfy_yields:
@@ -35,25 +30,34 @@ def main_cumulative():
                 cfy.update({'nuclide': data})
         except ImportError:
             pass
-    with open(exportcfyfilename, 'w') as file:
+    with open(export_filename, 'w') as file:
         json.dump(cfy_yields, file)
 
 
-def main_independent():
+def main_independent(element, database, export_filename):
     yields_data = yields.get_independent_yields(element, database)
 
     yields_data = filters.filter_by_yields(yields_data, 1E-10)
-    yields_data = filters.filter_light_elements(yields_data, 15)
+    yields_data = filters.filter_light_nuclides(yields_data, 15)
 
     print(len(yields_data))
     print(yields_data[0])
 
     data = list(map(map_yield_data, yields_data))
-    with open(exportfilename, 'w') as file:
+    with open(export_filename, 'w') as file:
         json.dump(data, file)
 
 
+def main():
+    element = "u238"
+    database = Database.JENDL
+    database_name = Database.NAME_JENDL.value
+    exportfilename = os.path.join(scriptdir, "dumps",  export_filename_template.format(element, database_name))
+    exportcfyfilename = os.path.join(scriptdir, "dumps",  export_cfy_filename_template.format(element, database_name))
+    main_independent(element, database, exportfilename)
+    main_cumulative(element, database, exportcfyfilename)
+
+
 if __name__ == '__main__':
-    main_independent()
-    main_cumulative()
+    main()
 

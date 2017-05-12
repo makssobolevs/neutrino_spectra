@@ -1,8 +1,8 @@
 import calculation.summation as summation
-from main import base_data
-from main import points
-from main import start_energy
-from main import h
+from setup import base_data
+from setup import points
+from setup import start_energy
+from setup import h
 import matplotlib.pyplot as plt
 
 el = base_data[234]

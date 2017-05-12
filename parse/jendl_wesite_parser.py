@@ -24,6 +24,7 @@ session = requests.Session()
 
 FLOAT_REGEXP = '(\d+(\.\d+)?)\s?'
 
+
 def parse_qmax(root):
     tags = root.xpath("(//b | //pre)")
     index_energy_label = 0
@@ -104,15 +105,15 @@ def get_data_by_element(z, a):
     logging.debug(result.text)
     data['symbol'] = parse_symbol(root)
     try:
-        data['qmax'] = parse_qmax(root)
+        data['q'] = parse_qmax(root)
     except ValueError:
         logging.warning("Qbeta parse error: z={}, a={}".format(z, a))
         raise ImportError
     data['hl'] = parse_half_life(root)
-    try:
-        data['gamma'] = parse_gamma(result.text)
-    except ValueError:
-        logging.warning("Gamma parse error: z={}, a={}".format(z, a))
+    # try:
+    #     data['gamma'] = parse_gamma(result.text)
+    # except ValueError:
+    #     logging.warning("Gamma parse error: z={}, a={}".format(z, a))
     data['z'] = z
     data['a'] = a
     return data

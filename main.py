@@ -1,64 +1,86 @@
-import json
-import os
-from constants import Database
+import setup as setup
+from calculation.summation import get_spectrum_value_for_branch, get_spectrum_value_for_element_cfy
 
-from utils.filters import filter_beta_decayable, filter_beta_decayable_cfy
-from calculation.summation import populate_lmdb
-
-# element_name = 'u238'
-# element_name = 'pu239'
-element_name = 'u235'
-
-database_name = Database.NAME_JENDL.value
-
-current_dir = os.path.dirname(__file__)
+from functools import reduce
+from multiprocessing import Pool
+import time as tt
 
 
-def load_independent_base_data():
-    filename = "{}_{}_ensdf.json".format(element_name, database_name)
-    loadfilename = os.path.join(current_dir, "parse", "dumps", filename)
-    file = open(loadfilename, "r")
-    data = json.load(file)
-    file.close()
-    # print("Base fission elements number:{}".format(len(data)))
-    data = filter_beta_decayable(data)
-    # print("Beta decayable branches number:{}".format(len(data)))
-    populate_lmdb(data)
-    return data
+def init_energy_cells(points, start_energy, d_energy):
+    cells = []
+    for i in range(points):
+        energy = start_energy + d_energy * i
+        d = {"e": energy, "s": 0}
+        cells.append(d)
+    return cells
 
 
-def load_cfy_data():
-    filename = "{}_{}_ensdf_cfy.json".format(element_name, database_name)
-    loadfilename = os.path.join(current_dir, "parse", "dumps", filename)
-    file = open(loadfilename, "r")
-    data = json.load(file)
-    file.close()
-    # print("Base cfy:{}".format(len(data)))
-    data = filter_beta_decayable_cfy(data)
-    # print("Filter cfy:{}".format(len(data)))
-    # populate_lmdb(data)
-    return data
-
-base_data = load_independent_base_data()
-cfy_data = load_cfy_data()
-
-exportfilename = os.path.join(current_dir, "plots", element_name + "time{}.dat")
+def export_spectrum(spectrum, time_str):
+    postfix = time_str
+    if setup.WITH_GAMMA:
+        postfix += "_gamma"
+    export_file = open(setup.export_filename.format(postfix), "w")
+    for c in spectrum:
+        export_file.write("{} {}\n".format(c['e'], c['s']))
+    export_file.close()
 
 
-start_energy = 0.0  # MeV
-finish_energy = 12.0  # MeV
-
-points = 500
-
-h = (finish_energy - start_energy) / points
-
-times = {
-    "1s": 1,
-    "1minute": 60,
-    "1hour": 3600,
-    "24hours": 24 * 3600,
-    "1week": 7 * 24 * 3600,
-    "1year": 1 * 365 * 24 * 3600
-}
+def add_element_spectrum_value(full_value, element_value):
+    for i in range(len(full_value)):
+        full_value[i]['s'] += element_value[i]['s']
+    return full_value
 
 
+def calculate_individual_spectrum(element, time):
+    element_spectrum_values = init_energy_cells(setup.points, setup.start_energy, setup.h)
+    for cell in element_spectrum_values:
+        energy = cell['e']
+        cell['s'] = get_spectrum_value_for_branch(element, energy, time)
+    return element_spectrum_values
+
+
+def calculate_individual_spectrum_cfy(element):
+    element_spectrum_values = init_energy_cells(setup.points, setup.start_energy, setup.h)
+    for cell in element_spectrum_values:
+        energy = cell['e']
+        cell['s'] = get_spectrum_value_for_element_cfy(element, energy)
+    return element_spectrum_values
+
+
+class TimeSpectrum(object):
+
+    def __init__(self, time):
+        self.time = time
+
+    def __call__(self, element):
+        return calculate_individual_spectrum(element, self.time)
+
+
+def calculate_spectrum_for_time(data, time, time_str):
+    full_spectrum_values = init_energy_cells(setup.points, setup.start_energy, setup.h)
+    start = tt.time()
+
+    spectra_list = Pool(setup.threads).imap_unordered(TimeSpectrum(time), data)
+    # spectra_list = list(map(calculate_individual_spectrum, base_data))
+    result = reduce(add_element_spectrum_value, spectra_list, full_spectrum_values)
+    end = tt.time()
+    print(end - start)
+    export_spectrum(result, time_str)
+
+
+def calculate_spectrum_for_cfy(data):
+    full_spectrum_values = init_energy_cells(setup.points, setup.start_energy, setup.h)
+    spectra_list = Pool(setup.threads).imap_unordered(calculate_individual_spectrum_cfy, data)
+    result = reduce(add_element_spectrum_value, spectra_list, full_spectrum_values)
+    export_spectrum(result, "CFY")
+
+
+if __name__ == "__main__":
+    base_data = setup.load_independent_base_data()
+    cfy_data = setup.load_cfy_data()
+    for tk in setup.times.keys():
+        t = setup.times[tk]
+        print("Calculating {} for time {}".format(setup.element_name, tk))
+        calculate_spectrum_for_time(base_data, t, tk)
+    print("Calculation for CFY")
+    calculate_spectrum_for_cfy(cfy_data)

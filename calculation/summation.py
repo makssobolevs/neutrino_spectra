@@ -1,27 +1,11 @@
 import math
-import calculation.settings as settings
-
-
-def get_normalization_for_chain(element, spectrum_values):
-    if not element['chain']:
-        n = 1
-    else:
-        n = len(element['chain'])
-    integral_value = 0
-    dE = spectrum_values[1]['e'] - spectrum_values[0]['e']
-    for cell in spectrum_values:
-        integral_value += cell['s']
-    integral_value *= dE
-    if integral_value != 0:
-        return element['y'] * n / integral_value
-    else:
-        return 0
+import setup
+from scipy import integrate
 
 cache = {}
 
 
 def get_normalization_for_distribution(element, qmax):
-    from scipy.integrate import quad
 
     result = 0.0
     key = str(element['a']) + str(element['s']) + str(qmax)
@@ -30,7 +14,7 @@ def get_normalization_for_distribution(element, qmax):
     else:
         def func(e):
             return distribution_for_q(element, e, qmax)
-        integral_result = quad(func, 0, 15)
+        integral_result = integrate.quad(func, 0, 15)
         if integral_result[0] != 0:
             result = 1 / integral_result[0]
         cache.update({key: result})
@@ -100,94 +84,66 @@ def bateman_solving(elements, n, t):
     return mult1
 
 
+def get_spectrum_for_nuclide(nuclide, energy):
+    s = distribution_for_q(nuclide, energy, nuclide['q'])
+    k = get_normalization_for_distribution(nuclide, nuclide['q'])
+    s *= k
+    if 'ratio' in nuclide:
+        s *= nuclide['ratio']
+    return s
+
+
+def get_spectrum_for_nuclide_with_branches(nuclide, energy):
+    qmax = nuclide['q']
+    s = 0
+    p = 0
+    for b in nuclide['branches']:
+        e = b['e']
+        ib = b['ib']
+        coeff = distribution_for_q(nuclide, energy, qmax - e)
+        k = get_normalization_for_distribution(nuclide, qmax - e)
+        coeff = coeff * k * ib
+        s += coeff
+        p += ib
+    if p < nuclide['ratio']:
+        ib = nuclide['ratio'] - p
+        coeff = distribution_for_q(nuclide, energy, qmax)
+        k = get_normalization_for_distribution(nuclide, qmax)
+        coeff = coeff * k * ib
+        s += coeff
+    return s
+
+
 def get_spectrum_value_for_branch(element, energy, time):
     branch = element['branch']
 
     s1 = 0
     for i in range(0, len(branch)):
-        if settings.WITH_GAMMA:
-            coef = distribution_with_gamma(branch[i], energy)
+        if setup.WITH_GAMMA:
+            s = get_spectrum_for_nuclide_with_branches(branch[i], energy)
         else:
-            coef = distribution(branch[i], energy)
-        k = get_normalization_for_distribution(branch[i], branch[i]['q'])
-        coef *= k
-        if 'ratio' in branch[i]:
-            coef *= branch[i]['ratio']
-
-        s1 += (element['y'] - bateman_solving(element, i, time)) * coef
+            s = get_spectrum_for_nuclide(branch[i], energy)
+        s1 += (element['y'] - bateman_solving(element, i, time)) * s
     return s1
-
-
-def get_spectrum_value(data, energy, time):
-    s = 0
-    for element in data:
-        s1 = get_spectrum_value_for_branch(element, energy, time)
-        s += s1
-
-    return s
 
 
 def get_spectrum_value_for_element_cfy(element, energy):
     """
-    Cumulative fission yield can be as for radioactive and stable
-    nuclide and has yield by all decay branches and direct product.
+    Cumulative fission yield present as for radioactive and stable
+    nuclide and has yield which was received by summation of 
+    the yield of all decay branches and direct product.
     There is no need to know full decay branch.    
     :param element: 
     :param energy: 
     :return: spectrum value
     """
     nuclide = element['nuclide']
-    if not settings.WITH_GAMMA:
-        qmax = nuclide['q']
-        s = 0
-        p = 0
-        for b in nuclide['branches']:
-            e = b['e']
-            ib = b['ib']
-            coeff = distribution_for_q(nuclide, energy, qmax - e)
-            k = get_normalization_for_distribution(nuclide, qmax - e)
-            coeff = coeff * k * ib
-            s += coeff
-            p += ib
-        if p < nuclide['ratio']:
-            ib = nuclide['ratio'] - p
-            coeff = distribution_for_q(nuclide, energy, qmax)
-            k = get_normalization_for_distribution(nuclide, qmax)
-            coeff = coeff * k * ib
-            s += coeff
+    if setup.WITH_GAMMA:
+        s = get_spectrum_for_nuclide_with_branches(nuclide, energy)
         return element['y'] * s
     else:
-        coeff = distribution(nuclide, energy)
-        k = get_normalization_for_distribution(nuclide, nuclide['q'])
-        coeff *= k
-        if 'ratio' in nuclide:
-            coeff *= nuclide['ratio']
-            return element['y'] * coeff
-
-
-def get_spectrum_for_cfy(data, energy):
-    s = 0
-    for element in data:
-        if settings.WITH_GAMMA:
-            coeff = distribution_with_gamma(element, energy)
-        else:
-            coeff = distribution(element, energy)
-        if 'ratio' in element:
-            coeff *= element['ratio']
-        s += element['y'] * coeff
-    return s
-
-
-def distribution_with_gamma(element, energy):
-    s = 0
-    p = 0
-    if 'gamma' in element:
-        for g in element['gamma']:
-            pgamma = g['pgamma']
-            s += distribution_for_q(element, energy, (element['qmax'] - g['qgamma']) * 1E-3 ) * pgamma
-            p += pgamma
-    s += distribution_for_q(element, energy, element['qmax'] * 1E-3) * (1 - p)
-    return s
+        s = get_spectrum_for_nuclide(nuclide, energy)
+        return element['y'] * s
 
 
 def get_ibd_cross_section(energy):

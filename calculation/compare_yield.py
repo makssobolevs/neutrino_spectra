@@ -1,7 +1,7 @@
 import calculation.cumulative_yields as cfy
 import parse.endf_yields_loader as endf_loader
 import constants
-import main
+import setup
 from calculation.summation import bateman_solving
 
 element = "u235"
