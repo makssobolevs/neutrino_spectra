@@ -4,7 +4,7 @@ from constants import Database
 from multiprocessing import cpu_count
 
 from utils.filters import filter_beta_decayable, filter_beta_decayable_cfy
-from calculation.summation import populate_lmdb
+from calculation import summation
 from parse.parse_full import export_cfy_filename_template, export_filename_template
 
 # element_name = 'u238'
@@ -43,7 +43,7 @@ def load_independent_base_data():
     # print("Base fission elements number:{}".format(len(data)))
     data = filter_beta_decayable(data)
     # print("Beta decayable branches number:{}".format(len(data)))
-    populate_lmdb(data)
+    summation.populate_lmdb(data)
     return data
 
 
@@ -56,5 +56,5 @@ def load_cfy_data():
     # print("Base cfy:{}".format(len(data)))
     data = filter_beta_decayable_cfy(data)
     # print("Filter cfy:{}".format(len(data)))
-    # populate_lmdb(data)
+    # summation.populate_lmdb_cfy(data)
     return data

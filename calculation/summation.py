@@ -5,8 +5,12 @@ from scipy import integrate
 cache = {}
 
 
-def get_normalization_for_distribution(element, qmax):
+def get_normalization_natural(nuclide):
+    qmax = nuclide['q']
+    return nuclide['l'] * get_normalization_for_distribution(nuclide, qmax)
 
+
+def get_normalization_for_distribution(element, qmax):
     result = 0.0
     key = str(element['a']) + str(element['s']) + str(qmax)
     if key in cache:
@@ -14,7 +18,7 @@ def get_normalization_for_distribution(element, qmax):
     else:
         def func(e):
             return distribution_for_q(element, e, qmax)
-        integral_result = integrate.quad(func, 0, 15)
+        integral_result = integrate.quad(func, 0, qmax - 0.511)
         if integral_result[0] != 0:
             result = 1 / integral_result[0]
         cache.update({key: result})
@@ -66,12 +70,18 @@ def populate_lmdb(data):
             el['l'] = lmbd(el)
 
 
+def populate_lmdb_cfy(data):
+    for element in data:
+        nuclide = element['nuclide']
+        nuclide['l'] = lmbd(nuclide)
+
+
 def bateman_solving(elements, n, t):
     mult1 = 1
     branch = elements['branch']
     mult1 *= elements['y']
     for j in range(0, n):
-        mult1 *= lmbd(branch[j])
+        mult1 *= lmbd(branch[j]) * branch[j]['ratio']
     sum1 = 0
     for j in range(0, n + 1):
         mult2 = 1
@@ -84,9 +94,32 @@ def bateman_solving(elements, n, t):
     return mult1
 
 
+def bateman_solving_with_source(elements, n, t):
+    mult1 = 1
+    branch = elements['branch']
+    power = 1200E6
+    q0 = 3.244E-11
+    source = elements['y']
+    mult1
+    for j in range(0, n):
+        mult1 *= lmbd(branch[j]) * branch[j]['ratio']
+    sum1 = 0
+    for j in range(0, n + 1):
+        mult2 = 1
+        for p in range(n + 1):
+            if p != j:
+                mult2 *= branch[p]['l'] - branch[j]['l']
+        if mult2 != 0.0:
+            sum1 += elements['y'] * math.exp(- branch[j]['l'] * t) / mult2
+            sum1 += source * (1 - math.exp(-branch[j]['l'] * t)) / (branch[j]['l'] * mult2)
+    mult1 *= sum1
+    return mult1
+
+
 def get_spectrum_for_nuclide(nuclide, energy):
     s = distribution_for_q(nuclide, energy, nuclide['q'])
     k = get_normalization_for_distribution(nuclide, nuclide['q'])
+    # k = get_normalization_natural(nuclide)
     s *= k
     if 'ratio' in nuclide:
         s *= nuclide['ratio']

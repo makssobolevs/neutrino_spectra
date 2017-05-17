@@ -1,5 +1,6 @@
 import parse.endf_yields_loader as yields
 import parse.ensdf_parser as ensdf
+import parse.jendl_wesite_parser as jendl
 from constants import Database
 import utils.filters as filters
 import json
@@ -29,7 +30,11 @@ def main_cumulative(element, database, export_filename):
             if data is not None:
                 cfy.update({'nuclide': data})
         except ImportError:
-            pass
+            print('from JENDL website loading')
+            jendl_data = jendl.get_data_by_element(cfy['z'], cfy['a'])
+            jendl_data['ratio'] = 1.0
+            if jendl_data['q'] > 0:
+                cfy.update({'nuclide': jendl_data})
     with open(export_filename, 'w') as file:
         json.dump(cfy_yields, file)
 
@@ -49,12 +54,12 @@ def main_independent(element, database, export_filename):
 
 
 def main():
-    element = "u238"
+    element = "u235"
     database = Database.JENDL
     database_name = Database.NAME_JENDL.value
     exportfilename = os.path.join(scriptdir, "dumps",  export_filename_template.format(element, database_name))
     exportcfyfilename = os.path.join(scriptdir, "dumps",  export_cfy_filename_template.format(element, database_name))
-    main_independent(element, database, exportfilename)
+    # main_independent(element, database, exportfilename)
     main_cumulative(element, database, exportcfyfilename)
 
 
