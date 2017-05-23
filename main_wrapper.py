@@ -17,4 +17,5 @@ def calculate_for_nuclide(nuclide):
     print("Calculation for CFY")
     main.calculate_spectrum_for_cfy(cfy_data)
 
-[calculate_for_nuclide(n) for n in main_nuclides]
+if __name__ == '__main__':
+    [calculate_for_nuclide(n) for n in main_nuclides]
