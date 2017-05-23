@@ -11,6 +11,7 @@ from parse.parse_full import export_cfy_filename_template, export_filename_templ
 # element_name = 'pu239'
 element_name = 'u235'
 WITH_GAMMA = True
+WITH_FERMI = False
 
 database_name = Database.NAME_JENDL.value
 current_dir = os.path.dirname(__file__)
@@ -41,7 +42,7 @@ def load_independent_base_data():
     data = json.load(file)
     file.close()
     # print("Base fission elements number:{}".format(len(data)))
-    data = filter_beta_decayable(data)
+    # data = filter_beta_decayable(data)
     # print("Beta decayable branches number:{}".format(len(data)))
     summation.populate_lmdb(data)
     return data
@@ -54,7 +55,7 @@ def load_cfy_data():
     data = json.load(file)
     file.close()
     # print("Base cfy:{}".format(len(data)))
-    data = filter_beta_decayable_cfy(data)
+    #data = filter_beta_decayable_cfy(data)
     # print("Filter cfy:{}".format(len(data)))
     # summation.populate_lmdb_cfy(data)
     return data

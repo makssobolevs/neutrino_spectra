@@ -5,6 +5,7 @@ from constants import Database
 import utils.filters as filters
 import json
 import os
+from multiprocessing import pool
 
 scriptdir = os.path.dirname(__file__)
 export_filename_template = "{}_{}_ensdf.json"
@@ -19,24 +20,29 @@ def map_yield_data(y):
     return y
 
 
+def map_cfy_data(cfy):
+    try:
+        data = ensdf.get_data_for_z_a(cfy['z'], cfy['a'], cfy['fps'])
+        if data is not None:
+            cfy.update({'nuclide': data})
+    except ImportError:
+        print('from JENDL website loading')
+        jendl_data = jendl.get_data_by_element(cfy['z'], cfy['a'])
+        jendl_data['ratio'] = 1.0
+        if jendl_data['q'] > 0:
+            cfy.update({'nuclide': jendl_data})
+    return cfy
+
+
 def main_cumulative(element, database, export_filename):
     cfy_yields = yields.get_cumulative_yields(element, database)
     cfy_yields = filters.filter_light_nuclides(cfy_yields, 15)
     cfy_yields = filters.filter_by_yields(cfy_yields, 1E-10)
 
-    for cfy in cfy_yields:
-        try:
-            data = ensdf.get_data_for_z_a(cfy['z'], cfy['a'], cfy['fps'])
-            if data is not None:
-                cfy.update({'nuclide': data})
-        except ImportError:
-            print('from JENDL website loading')
-            jendl_data = jendl.get_data_by_element(cfy['z'], cfy['a'])
-            jendl_data['ratio'] = 1.0
-            if jendl_data['q'] > 0:
-                cfy.update({'nuclide': jendl_data})
+    data = pool.ThreadPool(4).imap_unordered(map_cfy_data, cfy_yields)
+
     with open(export_filename, 'w') as file:
-        json.dump(cfy_yields, file)
+        json.dump(list(data), file)
 
 
 def main_independent(element, database, export_filename):
@@ -48,9 +54,10 @@ def main_independent(element, database, export_filename):
     print(len(yields_data))
     print(yields_data[0])
 
-    data = list(map(map_yield_data, yields_data))
+    data = pool.ThreadPool(4).imap_unordered(map_yield_data, yields_data)
+
     with open(export_filename, 'w') as file:
-        json.dump(data, file)
+        json.dump(list(data), file)
 
 
 def main():

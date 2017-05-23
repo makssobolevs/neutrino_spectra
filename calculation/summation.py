@@ -53,7 +53,11 @@ def distribution_for_q(element, energy, qbeta):
     elif qbeta - energy > m_e:
         mult1 = energy * energy * (qbeta - energy)
         mult2 = math.sqrt(math.pow(qbeta - energy, 2) - m_e * m_e)
-        return mult1 * mult2  # * fermi_function(element['z'], element['a'], qbeta - energy)
+        result = mult1 * mult2
+        if setup.WITH_FERMI:
+            return result * fermi_function(element['z'], element['a'], qbeta - energy)
+        else:
+            return result
     else:
         return 0.0
 
@@ -74,6 +78,7 @@ def populate_lmdb_cfy(data):
     for element in data:
         nuclide = element['nuclide']
         nuclide['l'] = lmbd(nuclide)
+        nuclide['z'] = element['z']
 
 
 def bateman_solving(elements, n, t):
@@ -102,7 +107,7 @@ def bateman_solving_with_source(elements, n, t):
     source = elements['y']
     mult1
     for j in range(0, n):
-        mult1 *= lmbd(branch[j]) * branch[j]['ratio']
+        mult1 *= lmbd(branch[j])
     sum1 = 0
     for j in range(0, n + 1):
         mult2 = 1
@@ -171,6 +176,7 @@ def get_spectrum_value_for_element_cfy(element, energy):
     :return: spectrum value
     """
     nuclide = element['nuclide']
+    # setup.WITH_FERMI = True
     if setup.WITH_GAMMA:
         s = get_spectrum_for_nuclide_with_branches(nuclide, energy)
         return element['y'] * s

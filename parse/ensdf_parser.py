@@ -251,7 +251,9 @@ def get_data_for_z_a(z, a, fps):
     except AttributeError:
         return None
     parent_id = str(a) + symbol
-    return get_data_for_nucid(parent_id, fps)
+    data = get_data_for_nucid(parent_id, fps)
+    data['z'] = z
+    return data
 
 
 def get_decay_branch(z, a, fps):
