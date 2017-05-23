@@ -66,7 +66,7 @@ def main():
     database_name = Database.NAME_JENDL.value
     exportfilename = os.path.join(scriptdir, "dumps",  export_filename_template.format(element, database_name))
     exportcfyfilename = os.path.join(scriptdir, "dumps",  export_cfy_filename_template.format(element, database_name))
-    # main_independent(element, database, exportfilename)
+    main_independent(element, database, exportfilename)
     main_cumulative(element, database, exportcfyfilename)
 
 

@@ -12,5 +12,5 @@ def filter_beta_decayable(data):
 
 
 def filter_beta_decayable_cfy(data):
-    d = [e for e in data if 'nuclide' in e]
+    d = [e for e in data if 'nuclide' in e and not '%' in str(e['nuclide']['hl'])]
     return d
