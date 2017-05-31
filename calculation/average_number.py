@@ -10,6 +10,7 @@ def print_results(full_count, length):
     print("Nuclide: {}".format(setup.element_name))
     print("Beta decayable: {}".format(length))
     print("Average filters in chain: {}".format(full_count / length))
+    print("\n")
 
 
 def ensdf():
@@ -29,5 +30,7 @@ def wolfram_research():
 
 
 if __name__ == '__main__':
+    print("Ensdf")
     ensdf()
+    print("Wolfram research")
     wolfram_research()
