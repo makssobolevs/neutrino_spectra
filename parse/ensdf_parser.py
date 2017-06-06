@@ -2,6 +2,8 @@ import os
 import fnmatch
 import re
 import sys
+import parse.jendl_wesite_parser as jendl
+import parse.endf_decay_data as endf
 
 scriptdir = os.path.dirname(__file__)
 xzy_pattern = "\+[XYZVUW]+"
@@ -208,7 +210,7 @@ def check_ib(element):
     return True
 
 
-def get_data_for_nucid(nucid, fps):
+def get_data_for_nucid(nucid, fps, z):
     a = int(nucid[:len(nucid) - 2])
     lines = load_ensdf_file(a)
 
@@ -224,7 +226,7 @@ def get_data_for_nucid(nucid, fps):
         print("Warning, two actual cards for {}".format(symbol))
         [print(c) for c in actual_cards]
     if len(actual_cards) == 0:
-        raise ImportError('No beta decay card')
+        raise ImportError('No beta decay card:{}, z:{}'.format(nucid, z))
 
     actual_card = actual_cards[0]
     q = get_q_value(actual_card, nucid) * 1E-3  # Mev
@@ -234,46 +236,76 @@ def get_data_for_nucid(nucid, fps):
 
     branches = get_beta_decay_branches(actual_card)
 
+    child = {
+        'z': z + 1,
+        'a': a,
+        'fps': 0.0
+    }
+
     return {'q': q,
             'hl': hl,
             'a': a,
+            'z': z,
             'fps': fps,
             'ratio': br,
             'child': child,
             's': symbol,
-            'branches': branches
+            'branches': branches,
+            'isStable': False
             }
+
+
+def get_endf_data(z, a, fps):
+    s = get_symbol_for_z_a(z, a)
+    endf_s = s[0].upper() + s[1].lower()
+    return endf.get_data_for_z_a(z, a, endf_s, fps)
+
+
+def get_jendl_website(z, a):
+    print("Fallback JENDL website")
+    jendl_data = jendl.get_data_by_element(z, a)
+    jendl_data['ratio'] = 1.0
+    jendl_data['isStable'] = False if jendl_data['q'] > 0 and '%' not in str(jendl_data['hl']) else True
+    if not jendl_data['isStable']:
+        jendl_data['child'] = {
+            'z': z + 1,
+            'a': a,
+            'fps': 0.0
+        }
+    return jendl_data
 
 
 def get_data_for_z_a(z, a, fps):
     try:
         symbol = get_symbol_for_z_a(z, a).upper()
-    except AttributeError:
-        return None
-    parent_id = str(a) + symbol
-    data = get_data_for_nucid(parent_id, fps)
-    data['z'] = z
+        parent_id = str(a) + symbol
+        data = get_data_for_nucid(parent_id, fps, z)
+    except (ImportError, AttributeError):
+        print('Fallback ENDF, z:{}, a:{}'.format(z, a))
+        try:
+            data = get_endf_data(z, a, fps)
+        except (ValueError, TypeError) as e:
+            print(e)
+            data = get_jendl_website(z, a)
+        except FileNotFoundError as e:
+            print(e)
+            data = get_jendl_website(z, a)
+        except ImportError as e:
+            print(e)
+            data = get_jendl_website(z, a)
     return data
 
 
 def get_decay_branch(z, a, fps):
-    try:
-        nuclide = get_data_for_z_a(z, a, fps)
-        print("{}, {} is stable".format(z, a))
-    except ImportError:
-        return []
+    nuclide = get_data_for_z_a(z, a, fps)
     if nuclide is None:
         return []
-    branch = [nuclide]
-    while True:
-        if 'child' in nuclide:
-            try:
-                nuclide = get_data_for_nucid(nuclide['child'], nuclide['fps'])
-                branch.append(nuclide)
-            except ImportError:
-                break
-        else:
-            break
+    branch = []
+    while nuclide is not None and not nuclide['isStable']:
+        print(nuclide)
+        branch.append(nuclide)
+        nuclide = get_data_for_z_a(nuclide['child']['z'], nuclide['child']['a'],
+                                   nuclide['child']['fps'])
     return branch
 
 

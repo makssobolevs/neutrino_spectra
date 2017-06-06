@@ -1,6 +1,5 @@
 import parse.endf_yields_loader as yields
 import parse.ensdf_parser as ensdf
-import parse.jendl_wesite_parser as jendl
 from constants import Database
 import utils.filters as filters
 import json
@@ -21,16 +20,9 @@ def map_yield_data(y):
 
 
 def map_cfy_data(cfy):
-    try:
-        data = ensdf.get_data_for_z_a(cfy['z'], cfy['a'], cfy['fps'])
-        if data is not None:
-            cfy.update({'nuclide': data})
-    except ImportError:
-        print('from JENDL website loading')
-        jendl_data = jendl.get_data_by_element(cfy['z'], cfy['a'])
-        jendl_data['ratio'] = 1.0
-        if jendl_data['q'] > 0:
-            cfy.update({'nuclide': jendl_data})
+    data = ensdf.get_data_for_z_a(cfy['z'], cfy['a'], cfy['fps'])
+    if data is not None and not data['isStable']:
+        cfy.update({'nuclide': data})
     return cfy
 
 
@@ -55,6 +47,7 @@ def main_independent(element, database, export_filename):
     print(yields_data[0])
 
     data = pool.ThreadPool(4).imap_unordered(map_yield_data, yields_data)
+    # data = map(map_yield_data, yields_data)
 
     with open(export_filename, 'w') as file:
         json.dump(list(data), file)
@@ -72,4 +65,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+    # data =ensdf.get_decay_branch(40, 100, 0.0)
+    # print(data)
+    # print(len(data))
 
