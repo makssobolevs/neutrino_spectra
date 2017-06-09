@@ -31,7 +31,6 @@ def wolfram_research():
 
 
 def plot_distribution(data):
-    import pylab as plt
     x = [i for i in range(8)]
     y = []
     for i in x:
