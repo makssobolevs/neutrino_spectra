@@ -36,8 +36,7 @@ def plot_distribution(data):
     y = []
     for i in x:
         number = len([x for x in data if len(x['branch']) == i])
-        y.append(num    plt.hist([x, y])
-    plt.show()ber)
+        y.append(number)
 
     print(x)
     print(y)
