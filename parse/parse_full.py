@@ -29,7 +29,7 @@ def map_cfy_data(cfy):
 def main_cumulative(element, database, export_filename):
     cfy_yields = yields.get_cumulative_yields(element, database)
     cfy_yields = filters.filter_light_nuclides(cfy_yields, 15)
-    cfy_yields = filters.filter_by_yields(cfy_yields, 1E-10)
+    # cfy_yields = filters.filter_by_yields(cfy_yields, 1E-10)
 
     data = pool.ThreadPool(4).imap_unordered(map_cfy_data, cfy_yields)
 
@@ -40,7 +40,7 @@ def main_cumulative(element, database, export_filename):
 def main_independent(element, database, export_filename):
     yields_data = yields.get_independent_yields(element, database)
 
-    yields_data = filters.filter_by_yields(yields_data, 1E-10)
+    # yields_data = filters.filter_by_yields(yields_data, 1E-10)
     yields_data = filters.filter_light_nuclides(yields_data, 15)
 
     print(len(yields_data))
