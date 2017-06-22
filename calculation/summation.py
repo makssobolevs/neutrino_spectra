@@ -62,10 +62,10 @@ def distribution_for_q(element, energy, qbeta):
         return 0.0
 
 
-def bateman_solving(elements, n, t):
+def bateman_solving(branch_with_yield, n, t):
     mult1 = 1
-    branch = elements['branch']
-    mult1 *= elements['y']
+    branch = branch_with_yield['branch']
+    mult1 *= branch_with_yield['y']
     for j in range(0, n):
         mult1 *= branch[j]['l'] * branch[j]['ratio']
     sum1 = 0
@@ -86,9 +86,8 @@ def bateman_solving_with_source(elements, n, t):
     power = 1200E6
     q0 = 3.244E-11
     source = elements['y']
-    mult1
     for j in range(0, n):
-        mult1 *= branch[j]['l']
+        mult1 *= branch[j]['l'] * branch[j]['ratio']
     sum1 = 0
     for j in range(0, n + 1):
         mult2 = 1
@@ -112,7 +111,7 @@ def get_spectrum_for_nuclide(nuclide, energy):
     return s
 
 
-def get_spectrum_for_nuclide_with_branches(nuclide, energy):
+def get_spectrum_for_nuclide_with_gamma(nuclide, energy):
     qmax = nuclide['q']
     s = 0
     p = 0
@@ -139,10 +138,10 @@ def get_spectrum_value_for_branch(element, energy, time):
     s1 = 0
     for i in range(0, len(branch)):
         if setup.WITH_GAMMA:
-            s = get_spectrum_for_nuclide_with_branches(branch[i], energy)
+            s = get_spectrum_for_nuclide_with_gamma(branch[i], energy)
         else:
             s = get_spectrum_for_nuclide(branch[i], energy)
-        s1 += (element['y'] - bateman_solving(element, i, time)) * s
+        s1 += branch[i]['l'] * bateman_solving_with_source(element, i, time) * s
     return s1
 
 
@@ -159,7 +158,7 @@ def get_spectrum_value_for_element_cfy(element, energy):
     nuclide = element['nuclide']
     # setup.WITH_FERMI = True
     if setup.WITH_GAMMA:
-        s = get_spectrum_for_nuclide_with_branches(nuclide, energy)
+        s = get_spectrum_for_nuclide_with_gamma(nuclide, energy)
         return element['y'] * s
     else:
         s = get_spectrum_for_nuclide(nuclide, energy)
