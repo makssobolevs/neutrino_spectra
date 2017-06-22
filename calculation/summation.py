@@ -62,31 +62,12 @@ def distribution_for_q(element, energy, qbeta):
         return 0.0
 
 
-def lmbd(element):
-    hl = element['hl']
-    l = math.log(2) / hl
-    return l
-
-
-def populate_lmdb(data):
-    for branch in data:
-        for el in branch['branch']:
-            el['l'] = lmbd(el)
-
-
-def populate_lmdb_cfy(data):
-    for element in data:
-        nuclide = element['nuclide']
-        nuclide['l'] = lmbd(nuclide)
-        nuclide['z'] = element['z']
-
-
 def bateman_solving(elements, n, t):
     mult1 = 1
     branch = elements['branch']
     mult1 *= elements['y']
     for j in range(0, n):
-        mult1 *= lmbd(branch[j]) * branch[j]['ratio']
+        mult1 *= branch[j]['l'] * branch[j]['ratio']
     sum1 = 0
     for j in range(0, n + 1):
         mult2 = 1
@@ -107,7 +88,7 @@ def bateman_solving_with_source(elements, n, t):
     source = elements['y']
     mult1
     for j in range(0, n):
-        mult1 *= lmbd(branch[j])
+        mult1 *= branch[j]['l']
     sum1 = 0
     for j in range(0, n + 1):
         mult2 = 1

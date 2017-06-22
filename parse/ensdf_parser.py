@@ -265,7 +265,7 @@ def get_jendl_website(z, a):
     print("Fallback JENDL website")
     jendl_data = jendl.get_data_by_element(z, a)
     jendl_data['ratio'] = 1.0
-    jendl_data['isStable'] = False if jendl_data['q'] > 0 and '%' not in str(jendl_data['hl']) else True
+    jendl_data['isStable'] = False if jendl_data['q'] > 0.511 else True
     if not jendl_data['isStable']:
         jendl_data['child'] = {
             'z': z + 1,

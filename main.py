@@ -19,7 +19,7 @@ def export_spectrum(spectrum, time_str):
     postfix = time_str
     if setup.WITH_GAMMA:
         postfix += "_gamma"
-    export_file = open(setup.export_filename.format(postfix), "w")
+    export_file = open(setup.get_export_filename().format(postfix), "w")
     for c in spectrum:
         export_file.write("{} {}\n".format(c['e'], c['s']))
     export_file.close()
