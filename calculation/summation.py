@@ -165,6 +165,14 @@ def get_spectrum_value_for_element_cfy(element, energy):
         return element['y'] * s
 
 
+def get_neutrino_number_for_time(branch_with_yield, time):
+    n = 0
+    chain = branch_with_yield['branch']
+    for i in range(len(chain)):
+        n += chain[i]['l'] * bateman_solving_with_source(branch_with_yield, i, time)
+    return n
+
+
 def get_ibd_cross_section(energy):
     delta = 0.939565 - 0.93827
     m_e = 0.511
