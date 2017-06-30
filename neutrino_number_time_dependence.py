@@ -23,6 +23,12 @@ def export_neutrino_number_time_dependence(x_all, y_all):
             file.write("{} {}\n".format(x_all[i], y_all[i]))
 
 
+def get_neutrino_number_for_time(ind_data, time):
+    list_of_numbers = list(map(NeutrinoNumberCaller(time), ind_data))
+    return np.sum(list_of_numbers)
+
+
+
 export_filename_template = "{}_neutrino_number.dat"
 
 start_time = 0.0
@@ -40,9 +46,11 @@ if __name__ == '__main__':
         print("time {}/{}".format(i, log_times.shape[0]))
         i += 1
         real_time = math.exp(log_time)
-        list_of_numbers = list(map(NeutrinoNumberCaller(real_time), ind_data))
-        result = np.sum(list_of_numbers)
+        result = get_neutrino_number_for_time(ind_data, real_time)
         neutrino_numbers.append(result)
     times = np.exp(log_times)
     export_neutrino_number_time_dependence(times, neutrino_numbers)
+    
+    number_inf = get_neutrino_number_for_time(ind_data, float("inf"))
+    print("Infinite time neutrino number:{}".format(number_inf))
 
