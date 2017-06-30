@@ -17,6 +17,8 @@ def populate_cfy(nuclide):
         if cfy['z'] == nuclide['z'] and cfy['a'] == nuclide['a'] and cfy['fps'] == nuclide['fps']:
             nuclide['cfy'] = cfy['y']
             break
+    if not 'cfy' in nuclide:
+        nuclide['cfy'] = None
 
 
 def populate_ind(nuclide):
