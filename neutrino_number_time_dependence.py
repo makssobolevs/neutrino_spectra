@@ -19,8 +19,8 @@ def export_neutrino_number_time_dependence(x_all, y_all):
     filepath = os.path.join(current_dir, "plots",
                             export_filename_template.format(setup.element_name))
     with open(filepath, 'w') as file:
-        for i in range(x_all.shape[0]):
-            file.write("{} {}\n".format(x_all[i], y_all[i]))
+        for k in range(x_all.shape[0]):
+            file.write("{} {}\n".format(x_all[k], y_all[k]))
 
 
 def get_neutrino_number_for_time(ind_data, time):

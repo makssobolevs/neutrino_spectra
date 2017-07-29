@@ -5,6 +5,8 @@ from functools import reduce
 from multiprocessing import Pool
 import time as tt
 
+from typing import List, Dict
+
 
 def init_energy_cells(points, start_energy, d_energy):
     cells = []
@@ -39,7 +41,7 @@ def calculate_individual_spectrum(element, time):
     return element_spectrum_values
 
 
-def calculate_individual_spectrum_cfy(element):
+def calculate_individual_spectrum_cfy(element: Dict):
     element_spectrum_values = init_energy_cells(setup.points, setup.start_energy, setup.h)
     for cell in element_spectrum_values:
         energy = cell['e']
@@ -47,7 +49,7 @@ def calculate_individual_spectrum_cfy(element):
     return element_spectrum_values
 
 
-class TimeSpectrum(object):
+class TimeSpectrumCaller(object):
 
     def __init__(self, time):
         self.time = time
@@ -56,11 +58,11 @@ class TimeSpectrum(object):
         return calculate_individual_spectrum(element, self.time)
 
 
-def calculate_spectrum_for_time(data, time, time_str):
+def calculate_spectrum_for_time(data: List[Dict], time: int, time_str: str) -> None:
     full_spectrum_values = init_energy_cells(setup.points, setup.start_energy, setup.h)
     start = tt.time()
 
-    spectra_list = Pool(setup.threads).imap_unordered(TimeSpectrum(time), data)
+    spectra_list = Pool(setup.threads).imap_unordered(TimeSpectrumCaller(time), data)
     # spectra_list = list(map(calculate_individual_spectrum, base_data))
     result = reduce(add_element_spectrum_value, spectra_list, full_spectrum_values)
     end = tt.time()
@@ -68,7 +70,7 @@ def calculate_spectrum_for_time(data, time, time_str):
     export_spectrum(result, time_str)
 
 
-def calculate_spectrum_for_cfy(data):
+def calculate_spectrum_for_cfy(data: List[Dict]):
     full_spectrum_values = init_energy_cells(setup.points, setup.start_energy, setup.h)
     spectra_list = Pool(setup.threads).imap_unordered(calculate_individual_spectrum_cfy, data)
     result = reduce(add_element_spectrum_value, spectra_list, full_spectrum_values)
