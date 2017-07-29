@@ -9,7 +9,8 @@ with open("/home/ace/Документы/Физика"
 #     json.dump(data, file, indent=4, sort_keys=True)
 
 
-setup.element_name = 'u238'
+# setup.element_name = 'u238'
+setup.element_name = 'pu239'
 cfy = setup.load_independent_base_data()
 
 with open("{}aaaa.dat".format(setup.element_name), 'w') as file:
@@ -18,8 +19,7 @@ with open("{}aaaa.dat".format(setup.element_name), 'w') as file:
         i = 0
         for d in dis:
             if d['a'] == el['a']:
-                if d['y'] < el['y']:
-                    d.update({'y': el['y']})
+                d['y'] += el['y']
                 break
             i += 1
         if i == len(dis):
