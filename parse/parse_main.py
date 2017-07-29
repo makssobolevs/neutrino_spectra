@@ -58,7 +58,7 @@ print("Length before: {}".format(len(elements)))
 elements = [el for el in elements if el['fps'] != 1.0]
 print("Length after removing fps not 1: {}".format(len(elements)))
 elements = filters.filter_by_yields(elements, 1E-10)
-elements = filters.filter_light_elements(elements, 15)
+elements = filters.filter_light_nuclides(elements, 15)
 print("Length after: {}".format(len(elements)))
 
 

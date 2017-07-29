@@ -24,6 +24,7 @@ session = requests.Session()
 
 FLOAT_REGEXP = '(\d+(\.\d+)?)\s?'
 
+
 def parse_qmax(root):
     tags = root.xpath("(//b | //pre)")
     index_energy_label = 0
@@ -102,17 +103,22 @@ def get_data_by_element(z, a):
     result = session.post(request_url, data=payload)
     root = etree.HTML(result.text)
     logging.debug(result.text)
-    data['symbol'] = parse_symbol(root)
+    data['s'] = parse_symbol(root)
     try:
-        data['qmax'] = parse_qmax(root)
-    except ValueError:
+        data['q'] = parse_qmax(root) * 1E-3
+    except (ValueError, IndexError):
         logging.warning("Qbeta parse error: z={}, a={}".format(z, a))
-        raise ImportError
-    data['hl'] = parse_half_life(root)
+        data['q'] = -1.0
+        pass
     try:
-        data['gamma'] = parse_gamma(result.text)
-    except ValueError:
-        logging.warning("Gamma parse error: z={}, a={}".format(z, a))
+        data['hl'] = parse_half_life(root)
+    except IndexError:
+        data['q'] = -1.0
+    # try:
+    #     data['gamma'] = parse_gamma(result.text)
+    # except ValueError:
+    #     logging.warning("Gamma parse error: z={}, a={}".format(z, a))
+    data['branches'] = []
     data['z'] = z
     data['a'] = a
     return data
