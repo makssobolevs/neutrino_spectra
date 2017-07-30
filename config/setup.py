@@ -1,19 +1,17 @@
 import json
-import os
 import configparser
 from multiprocessing import cpu_count
 
 import calculation.populators as populators
 from calculation.filters import filter_beta_decayable, filter_beta_decayable_cfy, filter_by_yields
-from parse.parse_full import export_cfy_filename_template, export_filename_template
+import api.resources_access as resources
 
-current_dir = os.path.dirname(__file__)
 
 config = configparser.ConfigParser()
-config.read(os.path.join(current_dir, 'config', 'settings.conf'))
+config.read(resources.get_settings_filepath())
 
 config_spectrum = config['spectrum']
-element_name = config_spectrum['element_name']
+main_nuclide_name = config_spectrum['main_nuclide_name']
 with_gamma = config_spectrum.getboolean('with_gamma')
 database_name = config_spectrum['database']
 independent_yields_low_border = float(config_spectrum['independent_yields_low_border'])
@@ -37,15 +35,9 @@ start_time = float(time_dep_config['start_time'])
 end_time = float(time_dep_config['end_time'])
 dt = float(time_dep_config['dt'])
 
-def get_export_filename(postfix):
-    exportfn = os.path.join(current_dir, 'output', element_name, element_name + postfix + ".dat")
-    os.makedirs(os.path.dirname(exportfn), exist_ok=True)
-    return exportfn
-
 
 def load_independent_base_data():
-    filename = export_filename_template.format(element_name, database_name)
-    loadfilename = os.path.join(current_dir, "parse", "dumps", filename)
+    loadfilename = resources.get_independent_base_data_filepath(main_nuclide_name, database_name)
     print(loadfilename)
     file = open(loadfilename, "r")
     data = json.load(file)
@@ -59,8 +51,7 @@ def load_independent_base_data():
 
 
 def load_cfy_data():
-    filename = export_cfy_filename_template.format(element_name, database_name)
-    loadfilename = os.path.join(current_dir, "parse", "dumps", filename)
+    loadfilename = resources.get_cfy_data_filepath(main_nuclide_name, database_name)
     file = open(loadfilename, "r")
     data = json.load(file)
     file.close()

@@ -1,11 +1,10 @@
-import setup as setup
-from calculation.summation import get_spectrum_value_for_branch, get_spectrum_value_for_element_cfy
-
+import time as tt
 from functools import reduce
 from multiprocessing import Pool
-import time as tt
-
 from typing import List, Dict
+
+from calculation.summation import get_spectrum_value_for_branch, get_spectrum_value_for_element_cfy
+from config import setup as setup
 
 
 def init_energy_cells():
@@ -19,13 +18,15 @@ def init_energy_cells():
 
 
 def export_spectrum(spectrum, time_str):
+    import api.resources_access as resources
+
     postfix = "time" + time_str
     if setup.with_gamma:
         postfix += "_gamma"
-    export_file = open(setup.get_export_filename(postfix), "w")
-    for c in spectrum:
-        export_file.write("{} {}\n".format(c['e'], c['s']))
-    export_file.close()
+    export_filepath = resources.get_dat_export_filepath(setup.main_nuclide_name, postfix)
+    with open(export_filepath, 'w') as file:
+        for c in spectrum:
+            file.write("{} {}\n".format(c['e'], c['s']))
 
 
 def add_element_spectrum_value(full_value, element_value):
@@ -83,7 +84,7 @@ if __name__ == "__main__":
     cfy_data = setup.load_cfy_data()
     for tk in setup.times.keys():
         t = setup.times[tk]
-        print("Calculating {} for time {}".format(setup.element_name, tk))
+        print("Calculating {} for time {}".format(setup.main_nuclide_name, tk))
         calculate_spectrum_for_time(base_data, t, tk)
     print("Calculation for CFY")
     calculate_spectrum_for_cfy(cfy_data)

@@ -1,7 +1,8 @@
-import numpy as np
-import setup
 import math
+import numpy as np
+
 import calculation.summation as summation
+from config import setup
 
 
 class NeutrinoNumberCaller(object):
@@ -14,7 +15,9 @@ class NeutrinoNumberCaller(object):
 
 
 def export_neutrino_number_time_dependence(x_all, y_all):
-    filepath = setup.get_export_filename('_neutrino_number')
+    import api.resources_access as resources
+
+    filepath = resources.get_dat_export_filepath(setup.main_nuclide_name, '_neutrino_number')
     with open(filepath, 'w') as file:
         for k in range(x_all.shape[0]):
             file.write("{} {}\n".format(x_all[k], y_all[k]))

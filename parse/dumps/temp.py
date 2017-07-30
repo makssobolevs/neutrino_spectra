@@ -1,5 +1,6 @@
 import json
-import setup
+
+from config import setup
 
 with open("/home/ace/Документы/Физика"
           "/Элементарные частицы/neutrino/spectrums/python/parse/dumps/u235_JENDL_ensdf.json", 'r') as file:
@@ -10,10 +11,10 @@ with open("/home/ace/Документы/Физика"
 
 
 # setup.element_name = 'u238'
-setup.element_name = 'pu239'
+setup.main_nuclide_name = 'pu239'
 cfy = setup.load_independent_base_data()
 
-with open("{}aaaa.dat".format(setup.element_name), 'w') as file:
+with open("{}aaaa.dat".format(setup.main_nuclide_name), 'w') as file:
     dis = []
     for el in cfy:
         i = 0

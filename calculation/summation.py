@@ -1,6 +1,8 @@
 import math
-import setup
+
 from scipy import integrate
+
+from config import setup
 from constants import ELECTRON_MASS as m_e
 
 cache = {}
