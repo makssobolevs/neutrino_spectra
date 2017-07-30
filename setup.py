@@ -34,8 +34,10 @@ times = {
 }
 
 
-def get_export_filename():
-    return os.path.join(current_dir, "plots", element_name + "time{}.dat")
+def get_export_filename(postfix):
+    exportfn = os.path.join(current_dir, 'output', element_name, element_name + postfix + ".dat")
+    os.makedirs(os.path.dirname(exportfn), exist_ok=True)
+    return exportfn
 
 
 def load_independent_base_data():

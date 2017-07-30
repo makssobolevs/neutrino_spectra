@@ -7,9 +7,8 @@ set title "N time dependence"
 set key left top
 set xlabel "t, c"
 set term png linewidth 2
-set output "number_time_dependence.png"
+set output "../output/".nuclide."_number_time_dependence.png"
 set logscale x
 #set format y "10^{%L}"
-nuclides = "u235"
 
-plot '../plots/u235_neutrino_number.dat' using 1:2 title "u235" with lines
+plot '../output/'.nuclide.'/'.nuclide.'_neutrino_number.dat' using 1:2 title "u235" with lines
