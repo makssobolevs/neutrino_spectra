@@ -137,7 +137,7 @@ def get_spectrum_value_for_branch(element, energy, time):
 
     s1 = 0
     for i in range(0, len(branch)):
-        if setup.WITH_GAMMA:
+        if setup.with_gamma:
             s = get_spectrum_for_nuclide_with_gamma(branch[i], energy)
         else:
             s = get_spectrum_for_nuclide(branch[i], energy)
@@ -157,7 +157,7 @@ def get_spectrum_value_for_element_cfy(element, energy):
     """
     nuclide = element['nuclide']
     # setup.WITH_FERMI = True
-    if setup.WITH_GAMMA:
+    if setup.with_gamma:
         s = get_spectrum_for_nuclide_with_gamma(nuclide, energy)
         return element['y'] * s
     else:

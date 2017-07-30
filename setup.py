@@ -1,28 +1,26 @@
 import json
 import os
-from constants import Database
+import configparser
 from multiprocessing import cpu_count
 
-from utils.filters import filter_beta_decayable, filter_beta_decayable_cfy, filter_by_yields
 import calculation.populators as populators
+from calculation.filters import filter_beta_decayable, filter_beta_decayable_cfy, filter_by_yields
 from parse.parse_full import export_cfy_filename_template, export_filename_template
 
-# element_name = 'u238'
-# element_name = 'pu239'
-element_name = 'u235'
-WITH_GAMMA = True
-WITH_FERMI = False
-
-database_name = Database.NAME_JENDL.value
 current_dir = os.path.dirname(__file__)
+
+config = configparser.ConfigParser()
+config.read(os.path.join(current_dir, 'config', 'settings.conf'))
+
+config_spectrum = config['spectrum']
+element_name = config_spectrum['element_name']
+with_gamma = config_spectrum.getboolean('with_gamma')
+database_name = config_spectrum['database']
+independent_yields_low_border = float(config_spectrum['independent_yields_low_border'])
 threads = cpu_count()
-
-start_energy = 0.0  # MeV
-finish_energy = 12.0  # MeV
-
-points = 500
-
-h = (finish_energy - start_energy) / points
+start_energy = float(config_spectrum['start_energy'])  # MeV
+finish_energy = float(config_spectrum['finish_energy'])  # MeV
+points = int(config_spectrum['points'])
 
 times = {
     "1s": 1,
@@ -32,7 +30,12 @@ times = {
     "1week": 7 * 24 * 3600,
     "1year": 1 * 365 * 24 * 3600
 }
+WITH_FERMI = False  # Not working
 
+time_dep_config = config['time_dependence']
+start_time = float(time_dep_config['start_time'])
+end_time = float(time_dep_config['end_time'])
+dt = float(time_dep_config['dt'])
 
 def get_export_filename(postfix):
     exportfn = os.path.join(current_dir, 'output', element_name, element_name + postfix + ".dat")
@@ -49,7 +52,7 @@ def load_independent_base_data():
     file.close()
     print("Base fission elements number:{}".format(len(data)))
     data = filter_beta_decayable(data)
-    data = filter_by_yields(data, 1E-10)
+    data = filter_by_yields(data, independent_yields_low_border)
     print("Beta decayable branches number:{}".format(len(data)))
     populators.populate_lambda(data)
     return data

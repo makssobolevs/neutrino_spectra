@@ -25,11 +25,7 @@ def get_neutrino_number_for_time(ind_data, time):
     return np.sum(list_of_numbers)
 
 
-start_time = 0.0
-end_time = math.log(10000000000.0)
-dt = 0.1
-
-log_times = np.arange(start_time, end_time, dt)
+log_times = np.arange(setup.start_time, math.log(setup.end_time), setup.dt)
 
 
 if __name__ == '__main__':

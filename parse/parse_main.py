@@ -1,11 +1,11 @@
-from constants import Database
-import os
-from parse.endf_yields_loader import get_independent_yields, get_cumulative_yields
-from parse.jendl_wesite_parser import get_data_by_element
-import utils.filters as filters
 import json
-import subprocess
+import os
 import time
+
+import calculation.filters as filters
+from constants import Database
+from parse.endf_yields_loader import get_cumulative_yields
+from parse.jendl_wesite_parser import get_data_by_element
 
 
 def get_yields_data(str_element, database):

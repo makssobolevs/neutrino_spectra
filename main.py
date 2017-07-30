@@ -8,10 +8,11 @@ import time as tt
 from typing import List, Dict
 
 
-def init_energy_cells(points, start_energy, d_energy):
+def init_energy_cells():
     cells = []
-    for i in range(points):
-        energy = start_energy + d_energy * i
+    d_e = (setup.finish_energy - setup.start_energy) / setup.points
+    for i in range(setup.points):
+        energy = setup.start_energy + d_e * i
         d = {"e": energy, "s": 0}
         cells.append(d)
     return cells
@@ -19,7 +20,7 @@ def init_energy_cells(points, start_energy, d_energy):
 
 def export_spectrum(spectrum, time_str):
     postfix = "time" + time_str
-    if setup.WITH_GAMMA:
+    if setup.with_gamma:
         postfix += "_gamma"
     export_file = open(setup.get_export_filename(postfix), "w")
     for c in spectrum:
@@ -34,7 +35,7 @@ def add_element_spectrum_value(full_value, element_value):
 
 
 def calculate_individual_spectrum(element, time):
-    element_spectrum_values = init_energy_cells(setup.points, setup.start_energy, setup.h)
+    element_spectrum_values = init_energy_cells()
     for cell in element_spectrum_values:
         energy = cell['e']
         cell['s'] = get_spectrum_value_for_branch(element, energy, time)
@@ -42,7 +43,7 @@ def calculate_individual_spectrum(element, time):
 
 
 def calculate_individual_spectrum_cfy(element: Dict):
-    element_spectrum_values = init_energy_cells(setup.points, setup.start_energy, setup.h)
+    element_spectrum_values = init_energy_cells()
     for cell in element_spectrum_values:
         energy = cell['e']
         cell['s'] = get_spectrum_value_for_element_cfy(element, energy)
@@ -59,7 +60,7 @@ class TimeSpectrumCaller(object):
 
 
 def calculate_spectrum_for_time(data: List[Dict], time: int, time_str: str) -> None:
-    full_spectrum_values = init_energy_cells(setup.points, setup.start_energy, setup.h)
+    full_spectrum_values = init_energy_cells()
     start = tt.time()
 
     spectra_list = Pool(setup.threads).imap_unordered(TimeSpectrumCaller(time), data)
@@ -71,7 +72,7 @@ def calculate_spectrum_for_time(data: List[Dict], time: int, time_str: str) -> N
 
 
 def calculate_spectrum_for_cfy(data: List[Dict]):
-    full_spectrum_values = init_energy_cells(setup.points, setup.start_energy, setup.h)
+    full_spectrum_values = init_energy_cells()
     spectra_list = Pool(setup.threads).imap_unordered(calculate_individual_spectrum_cfy, data)
     result = reduce(add_element_spectrum_value, spectra_list, full_spectrum_values)
     export_spectrum(result, "CFY")
