@@ -4,6 +4,7 @@ import re
 import sys
 import parse.jendl_wesite_parser as jendl
 import parse.endf_decay_data as endf
+import constants
 
 scriptdir = os.path.dirname(__file__)
 xzy_pattern = "\+[XYZVUW]+"
@@ -265,7 +266,7 @@ def get_jendl_website(z, a):
     print("Fallback JENDL website")
     jendl_data = jendl.get_data_by_element(z, a)
     jendl_data['ratio'] = 1.0
-    jendl_data['isStable'] = False if jendl_data['q'] > 0.511 else True
+    jendl_data['isStable'] = False if jendl_data['q'] > constants.ELECTRON_MASS else True
     if not jendl_data['isStable']:
         jendl_data['child'] = {
             'z': z + 1,

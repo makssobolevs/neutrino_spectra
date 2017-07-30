@@ -1,6 +1,7 @@
 import math
 import setup
 from scipy import integrate
+from constants import ELECTRON_MASS as m_e
 
 cache = {}
 
@@ -47,7 +48,6 @@ def distribution(element, energy):
 def distribution_for_q(element, energy, qbeta):
     from phys_functions import fermi_function
 
-    m_e = 0.511
     if energy > qbeta:
         return 0.0
     elif qbeta - energy > m_e:
@@ -175,7 +175,6 @@ def get_neutrino_number_for_time(branch_with_yield, time):
 
 def get_ibd_cross_section(energy):
     delta = 0.939565 - 0.93827
-    m_e = 0.511
     mult1 = energy - delta
     k = (energy - delta)*(energy - delta) - m_e * m_e
     if k > 0:
