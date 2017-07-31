@@ -21,3 +21,5 @@ scipy == 0.19.1
 
 # setup.py
 configparser == 3.5.0
+
+typing == 3.6.1
