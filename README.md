@@ -1,6 +1,6 @@
 Python >= 3.4  
 
-After cloning the project it's recommended to install virtualenv  
+After cloning the project it's recommended to use virtualenv  
    `sudo pip install virtualenv` or `sudo apt-get install python-virtualenv`  
    
 Setup new virtual environment in project directory  
