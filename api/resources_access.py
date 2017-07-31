@@ -16,7 +16,7 @@ def get_settings_filepath():
 
 
 def get_daya_bay_filepath():
-    return os.path.join(get_resources_dir(), 'daya_bay', 'arXiv:1607.05378', 'table_12.dat')
+    return os.path.join(get_resources_dir(), 'daya_bay', 'arXiv_1607.05378', 'table_12.dat')
 
 
 def get_independent_base_data_filepath(main_nuclide_name, database_name):

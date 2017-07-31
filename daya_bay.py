@@ -16,7 +16,7 @@ percentage = {
 
 
 def get_spectra_for_nuclide(main_nuclide_name):
-    postfix = 'timeCFY' + '_gamma'
+    postfix = 'timeCFY_gamma'
     filepath = resources.get_dat_export_filepath(main_nuclide_name, postfix)
     data = []
     with open(filepath, 'r') as file:
@@ -62,15 +62,14 @@ def get_daya_bay_bins():
 
 def integrate_bin(bin, full_spectrum):
     from scipy.interpolate import UnivariateSpline
+    # segment = []
+    # for el in full_spectrum:
+    #     if bin[0] < el['e'] < bin[1]:
+    #         segment.append(el)
 
-    segment = []
-    for el in full_spectrum:
-        if bin[0] < el['e'] < bin[1]:
-            segment.append(el)
-
-    x = [el['e'] for el in segment]
-    y = [el['s'] for el in segment]
-    s = UnivariateSpline(x, y, k=5, s=5)
+    x = [el['e'] for el in full_spectrum]
+    y = [el['s'] for el in full_spectrum]
+    s = UnivariateSpline(x, y, k=8, s=5)
     return s.integral(bin[0], bin[1])
 
 
