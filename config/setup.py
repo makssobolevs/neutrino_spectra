@@ -15,6 +15,7 @@ main_nuclide_name = config_spectrum['main_nuclide_name']
 with_gamma = config_spectrum.getboolean('with_gamma')
 database_name = config_spectrum['database']
 independent_yields_low_border = float(config_spectrum['independent_yields_low_border'])
+parallel = config_spectrum.getboolean('parallel')
 threads = cpu_count()
 start_energy = float(config_spectrum['start_energy'])  # MeV
 finish_energy = float(config_spectrum['finish_energy'])  # MeV

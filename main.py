@@ -64,8 +64,10 @@ def calculate_spectrum_for_time(data: List[Dict], time: int, time_str: str) -> N
     full_spectrum_values = init_energy_cells()
     start = tt.time()
 
-    spectra_list = Pool(setup.threads).imap_unordered(TimeSpectrumCaller(time), data)
-    # spectra_list = list(map(calculate_individual_spectrum, base_data))
+    if setup.parallel:
+        spectra_list = Pool(setup.threads).imap_unordered(TimeSpectrumCaller(time), data)
+    else:
+        spectra_list = list(map(TimeSpectrumCaller(time), data))
     result = reduce(add_element_spectrum_value, spectra_list, full_spectrum_values)
     end = tt.time()
     print(end - start)
@@ -74,7 +76,10 @@ def calculate_spectrum_for_time(data: List[Dict], time: int, time_str: str) -> N
 
 def calculate_spectrum_for_cfy(data: List[Dict]):
     full_spectrum_values = init_energy_cells()
-    spectra_list = Pool(setup.threads).imap_unordered(calculate_individual_spectrum_cfy, data)
+    if setup.parallel:
+        spectra_list = Pool(setup.threads).imap_unordered(calculate_individual_spectrum_cfy, data)
+    else:
+        spectra_list = list(map(calculate_individual_spectrum_cfy, data))
     result = reduce(add_element_spectrum_value, spectra_list, full_spectrum_values)
     export_spectrum(result, "CFY")
 
