@@ -70,8 +70,28 @@ def integrate_bin(bin, full_spectrum):
 
     x = [el['e'] for el in full_spectrum]
     y = [el['s'] for el in full_spectrum]
-    s = UnivariateSpline(x, y, k=5, s=5)
+    s = UnivariateSpline(x, y, k=5, s=0)
     return s.integral(bin[0], bin[1])
+
+
+def integrate_bin_rectangles(bin, full_spectrum):
+    import sys
+
+    x = 0
+    x_index = 0
+    x_abs = sys.maxsize
+    dx = full_spectrum[1]['e'] - full_spectrum[0]['e']
+    for i in range(len(full_spectrum)):
+        if abs(full_spectrum[i]['e'] - bin[0]) < x_abs:
+            x = full_spectrum[i]['e']
+            x_abs = abs(x - bin[0])
+            x_index = i
+
+    s = 0.0
+    while x < bin[1] and x_index < len(full_spectrum):
+        s += full_spectrum[x_index]['s']
+        x_index += 1
+    return s * dx
 
 
 def export_calculated_bins(data):
@@ -86,11 +106,12 @@ def main():
     bins = get_daya_bay_bins()
     result = []
     for bin in bins:
-        value = integrate_bin(bin, full_spectrum)
+        # value = integrate_bin(bin, full_spectrum)
+        value = integrate_bin_rectangles(bin, full_spectrum) / 1.0E-46
         print(value)
         result.append({
             'e': "{}-{}".format(str(bin[0]), str(bin[1])),
-            's': value
+            's': value / 1.0E-46
         })
     export_calculated_bins(result)
 
