@@ -176,11 +176,10 @@ def get_neutrino_number_for_time(branch_with_yield, time):
 
 
 def get_ibd_cross_section(energy):
+    """
+    Adopted formula from P.Vogel, J.F.Beacom, 1999
+    :parameter energy: neutrino energy in MeV
+    """
     delta = 0.939565 - 0.93827
-    mult1 = energy - delta
-    k = (energy - delta)*(energy - delta) - m_e * m_e
-    if k > 0:
-        mult2 = math.sqrt(k)
-    else:
-        mult2 = 1
-    return mult2 * mult1
+    e_energy = energy - delta
+    return 0.0952 * e_energy * math.sqrt(e_energy * e_energy - m_e * m_e) * 1E-42

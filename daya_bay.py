@@ -1,9 +1,10 @@
 from main import init_energy_cells
 from calculation.summation import get_ibd_cross_section
 import api.resources_access as resources
+
 # Plan:
 # 1) Get Full spectrum with fuel coefficients
-# 2) Parse daya bay results, get integration beans
+# 2) Parse daya bay results, get integration bins
 # 3) Integrate spectrum
 # 4) Contract result with IBD cross-section
 
