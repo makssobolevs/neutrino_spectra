@@ -182,4 +182,8 @@ def get_ibd_cross_section(energy):
     """
     delta = 0.939565 - 0.93827
     e_energy = energy - delta
-    return 0.0952 * e_energy * math.sqrt(e_energy * e_energy - m_e * m_e) * 1E-42
+    p_squared = e_energy * e_energy - m_e * m_e
+    if p_squared > 0:
+        return 0.0952 * e_energy * math.sqrt(p_squared) * 1.0E-42
+    else:
+        return 0

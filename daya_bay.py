@@ -70,7 +70,7 @@ def integrate_bin(bin, full_spectrum):
 
     x = [el['e'] for el in full_spectrum]
     y = [el['s'] for el in full_spectrum]
-    s = UnivariateSpline(x, y, k=8, s=5)
+    s = UnivariateSpline(x, y, k=5, s=5)
     return s.integral(bin[0], bin[1])
 
 
