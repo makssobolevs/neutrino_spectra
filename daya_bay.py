@@ -9,10 +9,10 @@ import api.resources_access as resources
 # 4) Contract result with IBD cross-section
 
 percentage = {
-    'u235': 0.2,
-    'pu239': 0.3
-    # 'u238': 0.02,
-    # 'pu241': 0.03
+    'u235': 0.561,
+    'u238': 0.076,
+    'pu239': 0.307,
+    'pu241': 0.056
 }
 
 
