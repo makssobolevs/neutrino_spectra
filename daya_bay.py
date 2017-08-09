@@ -57,7 +57,8 @@ def get_daya_bay_bins():
         for line in file:
             binstr = line.split()[0]
             a1, a2 = binstr.split('–')
-            bins.append((float(a1), float(a2)))
+            a3 = line.split()[1]
+            bins.append((float(a1), float(a2), float(a3)))
     return bins
 
 
@@ -97,8 +98,9 @@ def integrate_bin_rectangles(bin, full_spectrum):
 def export_calculated_bins(data):
     exportfn = resources.get_export_daya_bay_filepath()
     with open(exportfn, 'w') as file:
+        file.write("#energy,MeV    calculated,e-46  daya_bay  |daya_bay-calculated|/calculated\n")
         for bin in data:
-            file.write("{} {}\n".format(bin['e'], bin['s']))
+            file.write("{}  {}  {}  {}\n".format(bin['e'], bin['s'], bin['daya_bay'], bin['ratio']))
 
 
 def main():
@@ -106,12 +108,14 @@ def main():
     bins = get_daya_bay_bins()
     result = []
     for bin in bins:
-        # value = integrate_bin(bin, full_spectrum)
-        value = integrate_bin_rectangles(bin, full_spectrum) / 1.0E-46
+        value = integrate_bin(bin, full_spectrum) / 1.0E-46
+        # value = integrate_bin_rectangles(bin, full_spectrum) / 1.0E-46
         print(value)
         result.append({
             'e': "{}-{}".format(str(bin[0]), str(bin[1])),
-            's': value / 1.0E-46
+            's': value,
+            'daya_bay': bin[2],
+            'ratio': abs(bin[2] - value) / value
         })
     export_calculated_bins(result)
 
