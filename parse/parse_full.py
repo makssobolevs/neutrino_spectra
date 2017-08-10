@@ -1,10 +1,11 @@
-import parse.endf_yields_loader as yields
-import parse.ensdf_parser as ensdf
-from constants import Database
-import utils.filters as filters
 import json
 import os
 from multiprocessing import pool
+
+import calculation.filters as filters
+import parse.endf_yields_loader as yields
+import parse.ensdf_parser as ensdf
+from constants import Database
 
 scriptdir = os.path.dirname(__file__)
 export_filename_template = "{}_{}_ensdf.json"

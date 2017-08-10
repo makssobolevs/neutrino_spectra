@@ -1,6 +1,8 @@
 import math
-import setup
+
 from scipy import integrate
+
+from config import setup
 from constants import ELECTRON_MASS as m_e
 
 cache = {}
@@ -137,7 +139,7 @@ def get_spectrum_value_for_branch(element, energy, time):
 
     s1 = 0
     for i in range(0, len(branch)):
-        if setup.WITH_GAMMA:
+        if setup.with_gamma:
             s = get_spectrum_for_nuclide_with_gamma(branch[i], energy)
         else:
             s = get_spectrum_for_nuclide(branch[i], energy)
@@ -157,7 +159,7 @@ def get_spectrum_value_for_element_cfy(element, energy):
     """
     nuclide = element['nuclide']
     # setup.WITH_FERMI = True
-    if setup.WITH_GAMMA:
+    if setup.with_gamma:
         s = get_spectrum_for_nuclide_with_gamma(nuclide, energy)
         return element['y'] * s
     else:
@@ -174,11 +176,14 @@ def get_neutrino_number_for_time(branch_with_yield, time):
 
 
 def get_ibd_cross_section(energy):
+    """
+    Adopted formula from P.Vogel, J.F.Beacom, 1999
+    :parameter energy: neutrino energy in MeV
+    """
     delta = 0.939565 - 0.93827
-    mult1 = energy - delta
-    k = (energy - delta)*(energy - delta) - m_e * m_e
-    if k > 0:
-        mult2 = math.sqrt(k)
+    e_energy = energy - delta
+    p_squared = e_energy * e_energy - m_e * m_e
+    if p_squared > 0:
+        return 0.0952 * e_energy * math.sqrt(p_squared) * 1.0E-42
     else:
-        mult2 = 1
-    return mult2 * mult1
+        return 0

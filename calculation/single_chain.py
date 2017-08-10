@@ -1,8 +1,8 @@
-import calculation.summation as summ
-import setup
 import matplotlib.pyplot as plt
 import numpy as np
 
+import calculation.summation as summ
+from config import setup
 
 ind_data = setup.load_independent_base_data()
 

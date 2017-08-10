@@ -1,7 +1,9 @@
 import json
-import xlsxwriter
 import os
-import utils.filters as filters
+
+import xlsxwriter
+
+import calculation.filters as filters
 
 dir = os.path.dirname(__file__)
 

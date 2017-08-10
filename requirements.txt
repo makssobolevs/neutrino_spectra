@@ -8,8 +8,6 @@ beautifulsoup4 == 4.6.0
 lxml == 3.8.0
 
 # calculation/single_chain.py: 4
-# lib/nuclidedata/nuclide_data.py: 19
-# lib/nuclidedata/test_nuclide_data.py: 7
 # neutrino_number_time_dependence.py: 1
 numpy == 1.13.1
 
@@ -20,3 +18,8 @@ requests == 2.18.1
 # constants.py: 1
 # phys_functions.py: 3
 scipy == 0.19.1
+
+# setup.py
+configparser == 3.5.0
+
+typing == 3.6.1
