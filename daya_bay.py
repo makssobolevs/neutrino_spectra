@@ -56,7 +56,7 @@ def get_daya_bay_bins():
     with open(filepath, 'r') as file:
         for line in file:
             binstr = line.split()[0]
-            a1, a2 = binstr.split('–')
+            a1, a2 = binstr.split('-')
             a3 = line.split()[1]
             bins.append((float(a1), float(a2), float(a3)))
     return bins
