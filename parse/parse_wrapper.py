@@ -1,3 +1,10 @@
+import sys
+import os
+scriptdir = os.path.dirname(__file__)
+projectdir = os.path.abspath(os.path.join(scriptdir, os.pardir))
+sys.path.append(projectdir)
+
+
 import parse.parse_full as parse
 from constants import Database
 import os
